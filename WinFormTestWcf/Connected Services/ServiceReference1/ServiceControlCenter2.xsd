@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="AfterLotEndEventArgs">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="JobId" type="xs:int" />
+      <xs:element minOccurs="0" name="JobSpecialFlowId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="LotJudge" type="tns:LotJudgement" />
+      <xs:element minOccurs="0" name="LotNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="McNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="OpNo" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AfterLotEndEventArgs" nillable="true" type="tns:AfterLotEndEventArgs" />
+  <xs:simpleType name="LotJudgement">
+    <xs:restriction base="xs:string" />
+  </xs:simpleType>
+  <xs:element name="LotJudgement" nillable="true" type="tns:LotJudgement" />
+  <xs:complexType name="AfterLotEndResult">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ResultInfo">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AfterLotEndResult" nillable="true" type="tns:AfterLotEndResult" />
+  <xs:complexType name="ResultInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="HasError" type="xs:boolean" />
+      <xs:element minOccurs="0" name="WarningMessage" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ResultInfo" nillable="true" type="tns:ResultInfo" />
+</xs:schema>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="9f60266e-3e45-49b0-9f2a-0080ae4a26ac" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <UseSerializerForFaults>true</UseSerializerForFaults>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:59511/ServiceControlCenter.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="ServiceControlCenter2.xsd" MetadataType="Schema" ID="5c60ddd3-cc13-42b9-8b66-78a2adbdea7e" SourceId="1" SourceUrl="http://localhost:59511/ServiceControlCenter.svc?xsd=xsd2" />
+    <MetadataFile FileName="ServiceControlCenter.xsd" MetadataType="Schema" ID="dc56030b-5dd9-4881-9a1b-0ae9a7637113" SourceId="1" SourceUrl="http://localhost:59511/ServiceControlCenter.svc?xsd=xsd1" />
+    <MetadataFile FileName="ServiceControlCenter.wsdl" MetadataType="Wsdl" ID="648c145c-b4c6-4f63-8bd4-7aa3e24495fa" SourceId="1" SourceUrl="http://localhost:59511/ServiceControlCenter.svc?wsdl" />
+    <MetadataFile FileName="ServiceControlCenter.disco" MetadataType="Disco" ID="c55689ea-902f-4f57-ab47-9a94e574fc53" SourceId="1" SourceUrl="http://localhost:59511/ServiceControlCenter.svc?disco" />
+    <MetadataFile FileName="ServiceControlCenter1.xsd" MetadataType="Schema" ID="5a7a02b7-e825-4beb-85f8-2ab38d4ca9e0" SourceId="1" SourceUrl="http://localhost:59511/ServiceControlCenter.svc?xsd=xsd0" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
