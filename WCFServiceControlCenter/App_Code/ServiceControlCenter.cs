@@ -35,8 +35,7 @@ public class ServiceControlCenter : IServiceControlCenter
                     GetCurrentTranLot(e.LotNo, out lotId, out currentFlowName, out currentFlowId);
                     if (currentFlowId != null && currentFlowId != 142)
                     {
-
-                        afterLotEndResult = AddFtInspSpecialFlow(e.McNo, e.LotNo);
+                        afterLotEndResult = AddFtInspSpecialFlow(e.McNo, e.LotNo, e.LotJudge, currentFlowId, lotId);                        
                     }
                     else
                     {
@@ -67,43 +66,139 @@ public class ServiceControlCenter : IServiceControlCenter
     //    AddFtInspSpecialFlow(lotNo);
     //}
     #region "Store procedure"
-    private AfterLotEndResult AddFtInspSpecialFlow(string mcNo, string lotNo)
+    private AfterLotEndResult AddFtInspSpecialFlow(string mcNo, string lotNo, string lotJudgement, int? currentFlowId, int? lotId)
     {
         AfterLotEndResult afterLotEndResult = new AfterLotEndResult();
         afterLotEndResult.HasError = false;
+        if (lotJudgement == "INSPECTION")
+        {
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandText = "[atom].[sp_set_trans_special_flow_temp]";
+                    cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = lotNo;
+                    cmd.Connection.Open();
+                    using (SqlDataReader rd = cmd.ExecuteReader())
+                    {
+                        if (rd.HasRows)
+                        {
+                            DataTable dt = new DataTable();
+                            dt.Load(rd);
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                SaveLogFile(mcNo, lotNo, "Add SpecialFlow : 142", "PASS", "is_special_flow = " + row[0].ToString()); 
+                            }
+                        }
+                    } 
+                    cmd.Connection.Close();
+                    SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "PASS", "STORE >> [atom].[sp_set_trans_special_flow_temp]");
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION)", "FAIL", ex.Message);
+                afterLotEndResult.HasError = true;
+                afterLotEndResult.ErrorMessage = ex.Message;            
+                //throw;
+            }
+        }
+        else if (lotJudgement == "INSPECTION_ICMiss")
+        {
+            if (currentFlowId == null || lotId == null)
+            {
+                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "NOTHING", "FlowId and LotId == null");
+                return afterLotEndResult;
+            }
+            //108 = AUTO(2),110 = AUTO(3),119 = AUTO(4)
+            if (currentFlowId == 108 || currentFlowId == 110 || currentFlowId == 119)
+            {
+                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "NOTHING","Job in : " + currentFlowId.ToString());
+                return afterLotEndResult;
+            }
+            try
+            {
+                DataTable dtTransLot = GetTransLotFlow(lotId);
+                if (dtTransLot.Rows.Count > 0)
+                {
+                    int currentStepNo = 0;
+                    int nextStepNo = 0;
+                    for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+                    {
+                        DataRow row = dtTransLot.Rows[i];
+                        if (row["job_name"].ToString() == "AUTO(4)" && Convert.ToInt32(row["is_skipped"]) == 0 && currentStepNo == 0)
+                        {
+                            currentStepNo = Convert.ToInt32(row["step_no"]);
+                            continue;
+                        }
+                        if (currentStepNo != 0 &&  Convert.ToInt32(row["is_skipped"]) == 0)
+                        {
+                            nextStepNo = Convert.ToInt32(row["step_no"]);
+                            break;
+                        }
+                    }
+                    if (currentStepNo == 0 || nextStepNo == 0)
+                    {
+                        SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "FAIL", "CANNOT GET STEP_NO");
+                        return afterLotEndResult;
+                    }
+                    using (SqlCommand cmd = new SqlCommand())
+                    {
+                        cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                        cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                        cmd.CommandText = "[atom].[sp_set_trans_special_flow]";
+                        cmd.Parameters.Add("@lot_id", System.Data.SqlDbType.Int).Value = lotId;
+                        cmd.Parameters.Add("@step_no", System.Data.SqlDbType.Int).Value = currentStepNo;
+                        cmd.Parameters.Add("@back_step_no", System.Data.SqlDbType.Int).Value = nextStepNo;
+                        cmd.Parameters.Add("@user_id", System.Data.SqlDbType.Int).Value = 1; //Admin
+                        cmd.Parameters.Add("@flow_pattern_id", System.Data.SqlDbType.Int).Value = 1267;
+                        cmd.Parameters.Add("@is_special_flow", System.Data.SqlDbType.Int).Value = 2;
+                        cmd.Connection.Open();
+                        cmd.ExecuteNonQuery();
+                        cmd.Connection.Close();
+                        SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "PASS", "STORE >> [atom].[sp_set_trans_special_flow]");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "FAIL", ex.Message);
+                afterLotEndResult.HasError = true;
+                afterLotEndResult.ErrorMessage = ex.Message;
+                //throw;
+            }
+        }
+        return afterLotEndResult;
+    }
+    private DataTable GetTransLotFlow(int? lotId)
+    {
+        DataTable ret = new DataTable();
         try
         {
             using (SqlCommand cmd = new SqlCommand())
             {
                 cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
                 cmd.CommandType = System.Data.CommandType.StoredProcedure;
-                cmd.CommandText = "[atom].[sp_set_trans_special_flow_temp]";
-                cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = lotNo;
+                cmd.CommandText = "[atom].[sp_get_trans_lot_flows]";
+                cmd.Parameters.Add("@lot_id", System.Data.SqlDbType.Int).Value = lotId;
                 cmd.Connection.Open();
                 using (SqlDataReader rd = cmd.ExecuteReader())
                 {
                     if (rd.HasRows)
                     {
-                        DataTable dt = new DataTable();
-                        dt.Load(rd);
-                        foreach (DataRow row in dt.Rows)
-                        {
-                            SaveLogFile(mcNo, lotNo, "Add SpecialFlow : 142", "PASS", "is_special_flow = " + row[0].ToString()); 
-                        }
+                        ret.Load(rd);
                     }
-                } 
+                }
                 cmd.Connection.Close();
-                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "PASS", "STORE >> [atom].[sp_set_trans_special_flow_temp]");
             }
         }
         catch (Exception ex)
         {
-            SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "FAIL", ex.Message);
-            afterLotEndResult.HasError = true;
-            afterLotEndResult.ErrorMessage = ex.Message;            
-            //throw;
+            SaveLogFile("", lotId.ToString(), "GetTransLotFlow", "FAIL", ex.Message);
         }
-        return afterLotEndResult;
+        return ret;
     }
     private void GetCurrentTranLot(string lotNo, out int? lotId, out string currentFlowName,out int? currentFlowId)
     {
