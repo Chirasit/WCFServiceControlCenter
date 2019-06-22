@@ -112,12 +112,12 @@ public class ServiceControlCenter : IServiceControlCenter
                 SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "NOTHING", "FlowId and LotId == null");
                 return afterLotEndResult;
             }
-            //108 = AUTO(2),110 = AUTO(3),119 = AUTO(4)
-            if (currentFlowId == 108 || currentFlowId == 110 || currentFlowId == 119)
-            {
-                SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "NOTHING","Job in : " + currentFlowId.ToString());
-                return afterLotEndResult;
-            }
+            ////108 = AUTO(2),110 = AUTO(3),119 = AUTO(4)
+            //if (currentFlowId != 108 || currentFlowId != 110 || currentFlowId != 119)
+            //{
+            //    SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(INSPECTION_ICMiss)", "NOTHING","Job in : " + currentFlowId.ToString());
+            //    return afterLotEndResult;
+            //}
             try
             {
                 DataTable dtTransLot = GetTransLotFlow(lotId);
