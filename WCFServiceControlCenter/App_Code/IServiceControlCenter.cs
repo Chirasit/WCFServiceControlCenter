@@ -14,5 +14,8 @@ public interface IServiceControlCenter
 
     [OperationContract]
     AfterLotEndResult AfterLotEnd(AfterLotEndEventArgs e);
+    [OperationContract]
+    AddSpecialFlowResult AddSpecialFlow(AddSpecialFlowEventArgs e);   
+
 
 }

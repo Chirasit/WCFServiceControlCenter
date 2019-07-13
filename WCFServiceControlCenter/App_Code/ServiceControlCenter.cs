@@ -32,21 +32,109 @@ public class ServiceControlCenter : IServiceControlCenter
                     int? lotId = null;
                     int? currentFlowId = null;
                     string currentFlowName = "";
-                    GetCurrentTranLot(e.LotNo, out lotId, out currentFlowName, out currentFlowId);
-                    if (currentFlowId != null && currentFlowId != 142)
+                    string currentAssyDevice = "";
+                    GetCurrentTranLot(e.LotNo, out lotId, out currentFlowName, out currentFlowId, out currentAssyDevice);
+
+                    if (currentFlowId != null)                        
                     {
-                        afterLotEndResult = AddFtInspSpecialFlow(e.McNo, e.LotNo, e.LotJudge, currentFlowId, lotId);                        
+                        if (IsGDICDevice(currentAssyDevice))
+                        {
+                            if (currentFlowId != 142 && currentFlowId != 11 && currentFlowId != 266)
+                            {
+                                afterLotEndResult = AddFtInspSpecialFlow(e.McNo, e.LotNo, e.LotJudge, currentFlowId, lotId);
+                            }
+                            else
+                            {
+                                SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "Fail", "This lot already in job[" + currentFlowId.ToString() + "] : " + currentFlowName);
+                            }
+                        }
+                        else
+                        {
+                            SaveLogFile(e.McNo, e.LotNo, "IsGDICDevice", "Fail", "Device : "+ currentAssyDevice + " not GDIC");
+                        }                                          
                     }
                     else
                     {
-                        SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "Fail", "This lot already in job : " + currentFlowName);
+                        SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "Fail", "Notfound current flow");
                     }                    
                 }              
             }
         }
         return afterLotEndResult;
     }
-    
+
+
+    public AddSpecialFlowResult AddSpecialFlow(AddSpecialFlowEventArgs e)
+    {
+        AddSpecialFlowResult result = new AddSpecialFlowResult();
+        result.HasError = false;
+        int? lotId, currentFlowId;
+        int transCurrentStepNo;
+        string currentFlowName,currentState;
+        DataTable currentTable = GetCurrentTranLot(e.LotNo);
+        if (currentTable.Rows.Count > 0)
+        {
+            DataRow row = currentTable.Rows[0];
+            currentState = row["ProcessState"].ToString().Trim();
+            lotId = Convert.ToInt32(row["LotId"]);
+            transCurrentStepNo = Convert.ToInt32(row["StepNo"]);
+        }
+        else
+        {
+            result.WarningMessage = "ไม่พบ LotNo : " + e.LotNo + " ในระบบ กรุณาตรวจสอบ";
+            SaveLogFile("", e.LotNo, "AddSpecialFlow", "Warning", "ไม่พบข้อมูลในระบบ");
+            return result;
+        }
+        if (currentState != "Wait")
+        {
+            result.HasError = true;
+            result.ErrorMessage = "สถานะของ " + e.LotNo + " ต้องเป็น WIP เท่านั้น กรุณาตรวจสอบใน ATOM";
+            SaveLogFile("", e.LotNo, "AddSpecialFlow", "Failed", "สถานะของ " + e.LotNo + " ต้องเป็น WIP เท่านั้น กรุณาตรวจสอบใน ATOM");
+            return result;
+        }
+        DataTable dtTransLot = GetTransLotFlow(lotId);
+        if (dtTransLot.Rows.Count > 0)
+        {
+            string beforeStepNo = "";
+            int nextStepNo = 0;
+            for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+            {
+                DataRow row = dtTransLot.Rows[i];
+
+                if (transCurrentStepNo == Convert.ToInt32(row["step_no"]))
+                {
+                    if (row["job_name"].ToString() == "100% INSP." || row["job_name"].ToString() == "SAMPLING INSP")
+                    {
+                        result.HasError = false;
+                        result.WarningMessage = "สถานะของ " + e.LotNo + " อยู่ " + row["job_name"].ToString();
+                        SaveLogFile("", e.LotNo, "AddSpecialFlow", "Failed", "This lot : " + e.LotNo + " already in " + row["job_name"].ToString());
+                        return result;
+                    }
+
+                }
+
+                //if (row["job_name"].ToString() == "AUTO(4)" && Convert.ToInt32(row["is_skipped"]) == 0 && currentStepNo == 0)
+                //{
+                //    currentStepNo = Convert.ToInt32(row["step_no"]);
+                //    continue;
+                //}
+                //if (currentStepNo != 0 && Convert.ToInt32(row["is_skipped"]) == 0)
+                //{
+                //    nextStepNo = Convert.ToInt32(row["step_no"]);
+                //    break;
+                //}
+            }
+        }
+        else
+        {
+            result.HasError = true;
+            result.ErrorMessage = "ไม่พบรายละเอียดของ LotNo : " + e.LotNo + " ในระบบ กรุณาตรวจสอบ";
+            SaveLogFile("", e.LotNo, "AddSpecialFlow", "Failed", "ไม่พบรายละเอียดของ LotNo : " + e.LotNo + " ในระบบ กรุณาตรวจสอบ");
+            return result;
+        }
+        return result;
+    }
+
     //private void LotJudgementInspection(string mcNo, string lotNo)
     //{
     //    //string currentFlowName = GetCurrentFlowName(lotNo);
@@ -66,6 +154,7 @@ public class ServiceControlCenter : IServiceControlCenter
     //    AddFtInspSpecialFlow(lotNo);
     //}
     #region "Store procedure"
+    
     private AfterLotEndResult AddFtInspSpecialFlow(string mcNo, string lotNo, string lotJudgement, int? currentFlowId, int? lotId)
     {
         AfterLotEndResult afterLotEndResult = new AfterLotEndResult();
@@ -153,7 +242,7 @@ public class ServiceControlCenter : IServiceControlCenter
                         cmd.Parameters.Add("@step_no", System.Data.SqlDbType.Int).Value = currentStepNo;
                         cmd.Parameters.Add("@back_step_no", System.Data.SqlDbType.Int).Value = nextStepNo;
                         cmd.Parameters.Add("@user_id", System.Data.SqlDbType.Int).Value = 1; //Admin
-                        cmd.Parameters.Add("@flow_pattern_id", System.Data.SqlDbType.Int).Value = 1267;
+                        cmd.Parameters.Add("@flow_pattern_id", System.Data.SqlDbType.Int).Value = 1267; //100%INSP
                         cmd.Parameters.Add("@is_special_flow", System.Data.SqlDbType.Int).Value = 2;
                         cmd.Connection.Open();
                         cmd.ExecuteNonQuery();
@@ -200,9 +289,43 @@ public class ServiceControlCenter : IServiceControlCenter
         }
         return ret;
     }
-    private void GetCurrentTranLot(string lotNo, out int? lotId, out string currentFlowName,out int? currentFlowId)
+    private bool IsGDICDevice(string assyDevice)
+    {
+        bool ret = false;
+        try
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                cmd.CommandType = System.Data.CommandType.Text;
+                cmd.CommandText = "SELECT [device_name] FROM [DBxDW].[CAC].[DeviceGdic] WHERE [device_name] = @AssyDeviceName";
+                cmd.Parameters.Add("@AssyDeviceName", System.Data.SqlDbType.VarChar).Value = assyDevice;
+                cmd.Connection.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(rd);
+                        if (dt.Rows.Count > 0)
+                        {
+                            ret = true;
+                        }
+                    }
+                }
+                cmd.Connection.Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            SaveLogFile("", assyDevice, "IsGDICDevice", "FAIL", ex.Message);
+        }
+        return ret;
+    }
+    private void GetCurrentTranLot(string lotNo, out int? lotId, out string currentFlowName,out int? currentFlowId,out string currentAssyDevice)
     {
         currentFlowName = "";
+        currentAssyDevice = "";
         currentFlowId = null;
         lotId = null;
         if (!string.IsNullOrEmpty(lotNo))
@@ -231,6 +354,7 @@ public class ServiceControlCenter : IServiceControlCenter
                     currentFlowName = row["FlowName"].ToString();
                     lotId = Convert.ToInt32(row["LotId"]);
                     currentFlowId = Convert.ToInt32(row["FlowId"].ToString());
+                    currentAssyDevice = row["Assy_Name"].ToString();
                 }
             }
             catch (Exception ex)
@@ -239,6 +363,39 @@ public class ServiceControlCenter : IServiceControlCenter
             }
         }
         
+    }
+    private DataTable GetCurrentTranLot(string lotNo)
+    {
+        DataTable result = new DataTable();
+        if (!string.IsNullOrEmpty(lotNo))
+        {            
+            try
+            {
+                using (SqlCommand cmd = new SqlCommand())
+                {
+                    cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                    cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                    cmd.CommandText = "[cellcon].[sp_get_current_trans_lots]";
+                    cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = lotNo;
+                    cmd.Connection.Open();
+                    using (SqlDataReader rd = cmd.ExecuteReader())
+                    {
+                        if (rd.HasRows)
+                        {
+                            result.Load(rd);
+                        }
+                    }
+                    cmd.Connection.Close();
+                }
+                SaveLogFile("", lotNo, "GetCurrentTranLot(lotNo)", "PASS", "");
+            }
+            catch (Exception ex)
+            {
+                SaveLogFile("", lotNo, "GetCurrentTranLot(lotNo)", "FAIL", ex.Message);
+            }
+
+        }
+        return result;
     }
     //private bool GetPreviousFlow(int lotId, string currentFlow, out string preViousFlow)
     //{
@@ -279,6 +436,44 @@ public class ServiceControlCenter : IServiceControlCenter
     //    }
     //    return ret;
     //}
+    #endregion
+
+    #region "SQL Server"
+    private bool IsLotApcsPro(int? lotId)
+    {
+        bool result = false;
+        try
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT [APCSProDB].[trans].[lots].[id],[lot_no],[APCSProDB].[method].[packages].[id] as packageId,[APCSProDB].[method].[packages].[name],[act_device_name_id],[device_slip_id] FROM [APCSProDB].[trans].[lots] inner join [APCSProDB].[method].[packages] on [APCSProDB].[trans].[lots].[act_package_id] = [APCSProDB].[method].[packages].[id] WHERE [APCSProDB].[trans].[lots].[id] = @lotId and [APCSProDB].[method].[packages].is_enabled = 1";
+                cmd.Parameters.Add("@lotId", SqlDbType.Int).Value = lotId;
+                cmd.Connection.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(rd);
+                        if (dt.Rows.Count > 0)
+                        {
+                            result = true;
+                        }
+                    }
+                }
+                cmd.Connection.Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            SaveLogFile("", lotId.ToString(), "IsLotApcsPro", "Error", ex.Message);
+            result = false;
+        }
+        SaveLogFile("", lotId.ToString(), "IsLotApcsPro", result.ToString(),"");
+        return result;
+    }
     #endregion
 
     //public void AddSpecialFlow(int lotId)
