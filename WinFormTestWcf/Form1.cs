@@ -22,29 +22,20 @@ namespace WinFormTestWcf
         {
 
             ServiceReference1.ServiceControlCenterClient serviceClient = new ServiceControlCenterClient();
-            serviceClient.test();
-            //AfterLotEndEventArgs afterLotEndEventArgs = new AfterLotEndEventArgs()
-            //{
-            //    LotNo = "",
-            //    McNo = ""
-            //};
-            //AfterLotEndResult result = serviceClient.AfterLotEnd(afterLotEndEventArgs);
-            //if (result.HasError)
-            //{
-            //    MessageBox.Show(result.ErrorMessage);
-            //}
-            //else
-            //{
-            //    MessageBox.Show(result.WarningMessage);
-            //}
-            //serviceClient.AddSpecialFlow(0);
-            
+
+            ItemCheckingResult result = serviceClient.JigToolChecking(new ItemCheckingEventArgs());
+            MessageBox.Show(result.WarningMessage);
             //MessageBox.Show(tmpStr);
         }
 
         private void Button2_Click(object sender, EventArgs e)
         {
-
+            ServiceReference1.ServiceControlCenterClient serviceClient = new ServiceControlCenterClient();
+            AfterLotEndEventArgs endEventArgs = new AfterLotEndEventArgs();
+            endEventArgs.LotNo = "1940A4125V";
+            endEventArgs.McNo = "FT-RAS-001";
+            endEventArgs.LotJudge = "FT_BIN19_AUTO3";
+            AfterLotEndResult result = serviceClient.AfterLotEnd(endEventArgs);
         }
     }
 }

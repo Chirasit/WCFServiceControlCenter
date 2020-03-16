@@ -4,17 +4,13 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="JobId" type="xs:int" />
       <xs:element minOccurs="0" name="JobSpecialFlowId" nillable="true" type="xs:int" />
-      <xs:element minOccurs="0" name="LotJudge" type="tns:LotJudgement" />
+      <xs:element minOccurs="0" name="LotJudge" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="LotNo" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="McNo" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="OpNo" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="AfterLotEndEventArgs" nillable="true" type="tns:AfterLotEndEventArgs" />
-  <xs:simpleType name="LotJudgement">
-    <xs:restriction base="xs:string" />
-  </xs:simpleType>
-  <xs:element name="LotJudgement" nillable="true" type="tns:LotJudgement" />
   <xs:complexType name="AfterLotEndResult">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:ResultInfo">
@@ -31,4 +27,67 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ResultInfo" nillable="true" type="tns:ResultInfo" />
+  <xs:complexType name="AddSpecialFlowEventArgs">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="IsAddNow" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsConfirmAddSpecialFlow" nillable="true" type="xs:boolean" />
+      <xs:element minOccurs="0" name="JobId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="JobSpecialFlowId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="LotNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="NextJobId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="OpNo" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AddSpecialFlowEventArgs" nillable="true" type="tns:AddSpecialFlowEventArgs" />
+  <xs:complexType name="AddSpecialFlowResult">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ResultInfo">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="AddSpecialFlowResult" nillable="true" type="tns:AddSpecialFlowResult" />
+  <xs:complexType name="ItemCheckingEventArgs">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="DeviceName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="FrameType" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="LotNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="McId" type="xs:int" />
+      <xs:element minOccurs="0" name="McNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="McType" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="OpId" type="xs:int" />
+      <xs:element minOccurs="0" name="OpNo" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PackageName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="PreviousQrCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="QrCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="TpCode" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ItemCheckingEventArgs" nillable="true" type="tns:ItemCheckingEventArgs" />
+  <xs:complexType name="ItemCheckingResult">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:ResultInfo">
+        <xs:sequence />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="ItemCheckingResult" nillable="true" type="tns:ItemCheckingResult" />
+  <xs:complexType name="ArrayOfJigDataInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfJigDataInfo" nillable="true" type="tns:ArrayOfJigDataInfo" />
+  <xs:complexType name="JigDataInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="ExpireValue" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Id" type="xs:int" />
+      <xs:element minOccurs="0" name="IsChange" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ShortName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Status" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Type" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
 </xs:schema>

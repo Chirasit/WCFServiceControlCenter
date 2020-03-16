@@ -14,8 +14,12 @@ public interface IServiceControlCenter
 
     [OperationContract]
     AfterLotEndResult AfterLotEnd(AfterLotEndEventArgs e);
+
     [OperationContract]
-    AddSpecialFlowResult AddSpecialFlow(AddSpecialFlowEventArgs e);   
+    AddSpecialFlowResult AddSpecialFlow(AddSpecialFlowEventArgs e);
 
-
+    [OperationContract]
+    ItemCheckingResult JigToolChecking(ItemCheckingEventArgs e);
+    [OperationContract]
+    List<JigDataInfo> JigToolGetData(string mcNo, string lotNo);
 }

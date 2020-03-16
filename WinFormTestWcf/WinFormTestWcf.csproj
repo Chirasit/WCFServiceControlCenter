@@ -82,7 +82,16 @@
     <None Include="Connected Services\ServiceReference1\ServiceControlCenter2.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Connected Services\ServiceReference1\WinFormTestWcf.ServiceReference1.AddSpecialFlowResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Connected Services\ServiceReference1\WinFormTestWcf.ServiceReference1.AfterLotEndResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\ServiceReference1\WinFormTestWcf.ServiceReference1.ItemCheckingResult.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Connected Services\ServiceReference1\WinFormTestWcf.ServiceReference1.JigDataInfo.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Properties\Settings.settings">

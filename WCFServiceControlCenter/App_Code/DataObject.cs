@@ -8,10 +8,11 @@ using System.Web;
 /// </summary>
 public class DataObject
 {
-    public DataObject()
-    {
-        //
-        // TODO: Add constructor logic here
-        //
-    }
+    public string McNo { get; set; }
+    public string EquipmentQrCode { get; set; }
+    public string LotNo { get; set; }
+    public string OpNo { get; set; }
+
+
+
 }
