@@ -746,7 +746,8 @@ public class ServiceControlCenter : IServiceControlCenter
             cmd.Connection.Open();
             cmd.ExecuteNonQuery();
             cmd.Connection.Close();
-            SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "PASS", "STORE >> [atom].[sp_set_trans_special_flow] >> [flow_pattern_id : " + flow_pattern_id.ToString() + "]");
+            SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow", "PASS", "STORE >> [atom].[sp_set_trans_special_flow] >> [flow_pattern_id : " + flow_pattern_id.ToString() + "]|" 
+                + currentStepNo.ToString() + "|" + nextStepNo.ToString() + "|");
             
         }
     }
