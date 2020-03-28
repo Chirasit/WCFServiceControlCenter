@@ -426,7 +426,7 @@ public class ServiceControlCenter : IServiceControlCenter
                 afterLotEndResult.ErrorMessage = ex.Message;
             }
         }
-        else if (flowPattern == 1501)
+        else if (flowPattern == 1501 || flowPattern == 1502)
         {
             if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
             {
@@ -437,18 +437,34 @@ public class ServiceControlCenter : IServiceControlCenter
                 DataTable dtTransLot = GetTransLotFlow(lotId);
                 if (dtTransLot.Rows.Count > 0)
                 {
-
+                    bool isNextInsp = false;
                     for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
                     {
                         DataRow row = dtTransLot.Rows[i];
 
                         if (Convert.ToInt32(row["step_no"]) == nextStepNo)
                         {
-                            break;
+                            if (row["job_name"].ToString() == "100% INSP.")
+                            {
+                                isNextInsp = true;
+                                currentStepNo = Convert.ToInt32(row["step_no"]);
+                            }
+                            else
+                            {
+                                break;
+                            }                            
                         }
                         else if (Convert.ToInt32(row["is_skipped"]) == 0)
                         {
-                            currentStepNo = Convert.ToInt32(row["step_no"]);
+                            if (isNextInsp)
+                            {
+                                nextStepNo = Convert.ToInt32(row["step_no"]);
+                                break;
+                            }
+                            else
+                            {
+                                currentStepNo = Convert.ToInt32(row["step_no"]);
+                            }                           
                         }
 
 
@@ -464,17 +480,6 @@ public class ServiceControlCenter : IServiceControlCenter
                         //}
                     }
                 }
-            }
-        }
-        else if (flowPattern == 1502)
-        {
-            if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
-            {
-
-            }
-            else
-            {
-
             }
         }
         else
@@ -751,6 +756,28 @@ public class ServiceControlCenter : IServiceControlCenter
             
         }
     }
+    private DataTable Get_wb_hp_pp_checkframetype(string mcNo, string lotNo)
+    {
+        DataTable ret = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[jig].[sp_get_wb_hp_pp_checkframetype]";
+            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    ret.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        return ret;
+    }
     #endregion
 
     private void SaveLogFile(string mcNo, string lotNo, string title, string result, string message)
@@ -788,7 +815,57 @@ public class ServiceControlCenter : IServiceControlCenter
     public void DoWork()
     {
     }
+    private List<JigDataInfo> GetData_WbHp(string mcNo, string lotNo)
+    {
+        List<JigDataInfo> result = new List<JigDataInfo>();
 
+        DataTable getResultDataTable = Get_wb_hp_pp_checkframetype(mcNo, lotNo);
+        if (getResultDataTable.Rows.Count > 0)
+        {
+            int rowCount = 0;
+            foreach (DataRow row in getResultDataTable.Rows)
+            {
+                JigDataInfo jigGetData = new JigDataInfo();
+                string tmpIsPass = row["Is_Pass"].ToString();
+                bool isPass = false;
+                if (tmpIsPass == "TRUE") isPass = true; else isPass = false;
+                jigGetData.IsPass = true;
+                jigGetData.Message_Thai = row["Error_Message_THA"].ToString();
+                jigGetData.Message_Eng = row["Error_Message_ENG"].ToString();
+                if (isPass)
+                {
+                    jigGetData.Type = row["FrameType"].ToString();
+                    switch (rowCount)
+                    {
+                        case 0:
+                            jigGetData.Name = "HP";
+                            jigGetData.ShortName = "HP";
+                            break;
+                        case 1:
+                            jigGetData.Name = "PP";
+                            jigGetData.ShortName = "PP";
+                            break;
+                        default:
+                            break;
+                    }                     
+                }
+                else
+                {
+                    jigGetData.IsWarning = true;
+                    jigGetData.Warning = row["Handling"].ToString();
+                    if (getResultDataTable.Columns.Count == 6)
+                    {
+                        jigGetData.Message_Thai = jigGetData.Message_Thai + "|LotFrame:" + row[4].ToString() + "|JigFrame:" + row[5].ToString() + "|";
+                        jigGetData.Message_Eng = jigGetData.Message_Eng + "|LotFrame:" + row[4].ToString() + "|JigFrame:" + row[5].ToString() + "|";
+                    }
+                    jigGetData.Handling = row["Handling"].ToString();                          
+                }
+                result.Add(jigGetData);
+                rowCount += 1;
+            }
+        }        
+        return result;
+    }
     public List<JigDataInfo> JigToolGetData(string mcNo, string lotNo)
     {
         List<JigDataInfo> result = new List<JigDataInfo>();
@@ -799,10 +876,32 @@ public class ServiceControlCenter : IServiceControlCenter
         switch (mcNo.Substring(0, 2))
         {
             case "WB":
-                JigDataInfo tmpJig = new JigDataInfo { Type = "HP" };
-                result.Add(tmpJig);
-                tmpJig = new JigDataInfo { Type = "PP" };
-                result.Add(tmpJig);
+                bool isUseHp = false;
+                string strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\TempJigControl.txt");
+                using (StreamReader rd = new StreamReader(strPath))
+                {
+                    while (!rd.EndOfStream)
+                    {
+                        string tmpStr = rd.ReadLine();
+                        string[] tmpStrList = tmpStr.Split('|');
+                        if (tmpStrList[0] == mcNo)
+                        {
+                            string[] tmpHp = tmpStrList[1].Split(',');
+                            if (tmpHp[1] == "1")
+                            {
+                                isUseHp = true;
+                            }
+                        }
+                    }
+                }
+                if (isUseHp)
+                {
+                    result = GetData_WbHp(mcNo, lotNo);
+                }
+                else
+                {
+
+                }
 
                 break;
             case "TC":
@@ -815,5 +914,6 @@ public class ServiceControlCenter : IServiceControlCenter
         return result;
 
     }
+
 
 }

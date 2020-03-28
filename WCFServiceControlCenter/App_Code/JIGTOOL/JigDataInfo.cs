@@ -24,4 +24,17 @@ public class JigDataInfo
     public string Status { get; set; }
     [DataMember]
     public bool IsChange { get; set; }
+    [DataMember]
+    public bool IsPass { get; set; }
+    [DataMember]
+    public string Message_Thai { get; set; }
+    [DataMember]
+    public string Message_Eng { get; set; }
+    [DataMember]
+    public string Handling { get; set; }
+    [DataMember]
+    public string Warning { get; set; }
+    [DataMember]
+    public bool IsWarning { get; set; }
+
 }
