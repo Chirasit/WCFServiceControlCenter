@@ -112,7 +112,7 @@ public class ServiceControlCenter : IServiceControlCenter
                         //afterLotEndResult = SetQualityState(3, e.LotNo);
                         // Flow pattern = 1500
                         DataRow row = currentDataTable.Rows[0];
-                        if (currentFlowName.Trim() == "AUTO(2)ASISAMPLE")
+                        if (currentFlowName.Trim() == "AUTO(2)ASISAMPLE" || currentFlowName.Trim() == "AUTO(3)ASISAMPLE")
                         {
                             SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "Fail", "This lot already in job[" + currentFlowId.ToString() + "] : " + currentFlowName);
                         }
@@ -333,7 +333,21 @@ public class ServiceControlCenter : IServiceControlCenter
                 flowPattern = 1502;
                 break;
             case "ASIMode":
-                flowPattern = 1666;
+                switch (currentFlowId)
+                {
+                    case 108: //Auto2
+                        flowPattern = 1194; //Add retest Auto1
+                        break;
+                    case 110: //Auto3
+                        flowPattern = 1195; //Add retest Auto2
+                        break;
+                    case 119: //Auto4
+                        flowPattern = 1196; //Add retest Auto3
+                        break;
+                    default:
+                        flowPattern = 1666; //Add flow??                        
+                        break;
+                }
                 break;
             case "INSP_LowYield":
                 if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
@@ -482,12 +496,47 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
             }
         }
-        else
+        else if (flowPattern == 1666)
         {
             DataTable dtTransLot = GetTransLotFlow(lotId);
             if (dtTransLot.Rows.Count > 0)
             {
-                
+                for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+                {
+                    DataRow row = dtTransLot.Rows[i];
+                    if (Convert.ToInt32(row["step_no"]) == nextStepNo)
+                    {
+                        break;
+                    }
+                    else if (Convert.ToInt32(row["is_skipped"]) == 0)
+                    {
+                        currentStepNo = Convert.ToInt32(row["step_no"]);
+                        switch (row["job_name"].ToString())
+                        {
+                            case "AUTO(1)":
+                                flowPattern = 1194;
+                                break;
+                            case "AUTO(2)":
+                                flowPattern = 1195;
+                                break;
+                            case "AUTO(3)":
+                                flowPattern = 1196;
+                                break;
+                            case "AUTO(4)":
+                                flowPattern = 1197;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            DataTable dtTransLot = GetTransLotFlow(lotId);
+            if (dtTransLot.Rows.Count > 0)
+            {                
                 for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
                 {
                     DataRow row = dtTransLot.Rows[i];
@@ -815,7 +864,7 @@ public class ServiceControlCenter : IServiceControlCenter
     public void DoWork()
     {
     }
-    private List<JigDataInfo> GetData_WbHp(string mcNo, string lotNo)
+    private List<JigDataInfo> JigCheckData_WbHp(string mcNo, string lotNo)
     {
         List<JigDataInfo> result = new List<JigDataInfo>();
 
@@ -896,7 +945,7 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 if (isUseHp)
                 {
-                    result = GetData_WbHp(mcNo, lotNo);
+                    result = JigCheckData_WbHp(mcNo, lotNo);
                 }
                 else
                 {
