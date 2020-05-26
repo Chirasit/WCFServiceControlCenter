@@ -814,7 +814,7 @@ public class ServiceControlCenter : IServiceControlCenter
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
             cmd.CommandText = "[jig].[sp_get_wb_hp_pp_checkframetype]";
             cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
-            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
             cmd.Connection.Open();
             using (SqlDataReader rd = cmd.ExecuteReader())
             {
@@ -824,6 +824,64 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
             }
             cmd.Connection.Close();
+        }
+        return ret;
+    }
+    private DataTable Get_jig_onmachine(string mcNo)
+    {
+        DataTable ret = new DataTable();
+        try
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.CommandText = "[jig].[sp_get_jig_onmachine]";
+                cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+                cmd.Connection.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        ret.Load(rd);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            SaveLogFile(mcNo, "", "Get_jig_onmachine", "Fail", "Error : " + ex.Message);
+        }
+        return ret;
+    }
+    private DataTable Check_jig_qrCode(string mcNo, string opNo, string lotNo, string qrCode)
+    {
+        DataTable ret = new DataTable();
+        try
+        {
+            using (SqlCommand cmd = new SqlCommand())
+            {
+                cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_hp_pp_setup]";
+                cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+                cmd.Parameters.Add("@LOTNo", SqlDbType.VarChar).Value = lotNo;
+                cmd.Parameters.Add("@HPPP_QR", SqlDbType.VarChar).Value = qrCode;
+                cmd.Connection.Open();
+                using (SqlDataReader rd = cmd.ExecuteReader())
+                {
+                    if (rd.HasRows)
+                    {
+                        ret.Load(rd);
+                    }
+                }
+                cmd.Connection.Close();
+            }
+        }
+        catch (Exception ex)
+        {
+            SaveLogFile(mcNo, "", "Get_jig_onmachine", "Fail", "Error : " + ex.Message);
         }
         return ret;
     }
@@ -867,7 +925,6 @@ public class ServiceControlCenter : IServiceControlCenter
     private List<JigDataInfo> JigCheckData_WbHp(string mcNo, string lotNo)
     {
         List<JigDataInfo> result = new List<JigDataInfo>();
-
         DataTable getResultDataTable = Get_wb_hp_pp_checkframetype(mcNo, lotNo);
         if (getResultDataTable.Rows.Count > 0)
         {
@@ -915,17 +972,111 @@ public class ServiceControlCenter : IServiceControlCenter
         }        
         return result;
     }
-    public List<JigDataInfo> JigToolGetData(string mcNo, string lotNo)
+    private JigDataInfo[] JigGetApplyDataInfo(string mcNo)
+    {
+        JigDataInfo[] ret = null;
+        DataTable getJigDataByMachine = Get_jig_onmachine(mcNo);
+        if (getJigDataByMachine.Rows.Count > 0)
+        {
+            ret = new JigDataInfo[getJigDataByMachine.Rows.Count];
+            int i = 0;
+            foreach (DataRow row in getJigDataByMachine.Rows)
+            {
+                ret[i].Id = Convert.ToInt32(row["jig_id"]);
+                ret[i].BarCode = row["barcode"].ToString();
+                ret[i].SmallCode = row["smallcode"].ToString();
+                ret[i].QrCodeByUser = row["qrcodebyuser"].ToString();
+                ret[i].Status = row["status"].ToString();
+                ret[i].SubType = row["SubType"].ToString();
+                ret[i].Value = Convert.ToInt32(row["LifeTime"]);
+                
+            }
+        }
+        return ret;
+    }
+    private JigDataInfo JigCheckData(string mcNo, string opNo, string lotNo, string qrCode)
+    {
+        JigDataInfo ret = new JigDataInfo();
+        DataTable checkResult = Check_jig_qrCode(mcNo, opNo, lotNo, qrCode);
+        if (checkResult.Rows.Count > 0)
+        {
+            DataRow row = checkResult.Rows[0];
+            if (row["Is_Pass"].ToString() == "FALSE")
+            {
+                ret.IsPass = false;
+                ret.Message_Eng = row["Error_Message_ENG"].ToString();
+            }
+            else
+            {
+                ret.Id = Convert.ToInt32(row["HPPP_ID"]);
+                ret.IsPass = true;
+                ret.SmallCode = row["HPPP_SmallCode"].ToString();
+            }
+            //foreach (DataRow row in getJigDataByMachine.Rows)
+            //{
+            //    JigDataInfo jigDataInfo = new JigDataInfo();
+            //    jigDataInfo.Id = Convert.ToInt32(row["jig_id"]);
+            //    jigDataInfo.BarCode = row["barcode"].ToString();
+            //    jigDataInfo.SmallCode = row["smallcode"].ToString();
+            //    jigDataInfo.QrCodeByUser = row["qrcodebyuser"].ToString();
+            //    jigDataInfo.Status = row["status"].ToString();
+            //    jigDataInfo.SubType = row["SubType"].ToString();
+            //    jigDataInfo.Value = Convert.ToInt32(row["LifeTime"]);
+            //    ret.Add(jigDataInfo);
+            //}
+        }
+        return ret;
+    }
+
+    //public List<JigDataInfo> JigToolCheckData(string mcNo, string lotNo, string jigQrCode)
+    //{
+    //    JigDataInfo[] result = null;
+    //    SaveLogFile(mcNo, lotNo, "JigToolCheckData", "", "jigQrCode : " + jigQrCode);
+    //    bool isUseHp = IsUseJigControl(mcNo);
+    //    if (isUseHp)
+    //    {
+    //        switch (mcNo.Substring(0, 2))
+    //        {
+    //            case "WB":
+    //                if (isUseHp)
+    //                {
+    //                    result = JigGetApplyDataInfo(mcNo);
+    //                }
+    //                else
+    //                {
+
+    //                }
+
+    //                break;
+    //            case "TC":
+    //            case "FL":
+    //                //JigDataInfo tmpJig = new JigDataInfo { Type = "Kanagata" };
+    //                break;
+    //            default:
+    //                break;
+    //        }
+    //    }
+       
+    //    return result;
+    //}
+
+    public List<JigDataInfo> JigToolUpdateData(string mcNo, string lotNo, string jigQrCode)
     {
         List<JigDataInfo> result = new List<JigDataInfo>();
 
-        //// Get jig data here
-        //// If LotNo != ""
+        return result;
+    }
 
+    public void OnLotSetupChecking()
+    {
+
+    }
+    private bool IsUseJigControl(string mcNo)
+    {
+        bool ret = false;
         switch (mcNo.Substring(0, 2))
         {
             case "WB":
-                bool isUseHp = false;
                 string strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\TempJigControl.txt");
                 using (StreamReader rd = new StreamReader(strPath))
                 {
@@ -938,20 +1089,11 @@ public class ServiceControlCenter : IServiceControlCenter
                             string[] tmpHp = tmpStrList[1].Split(',');
                             if (tmpHp[1] == "1")
                             {
-                                isUseHp = true;
+                                ret = true;
                             }
                         }
                     }
                 }
-                if (isUseHp)
-                {
-                    result = JigCheckData_WbHp(mcNo, lotNo);
-                }
-                else
-                {
-
-                }
-
                 break;
             case "TC":
             case "FL":
@@ -960,9 +1102,40 @@ public class ServiceControlCenter : IServiceControlCenter
             default:
                 break;
         }
-        return result;
-
+        return ret;
     }
+    
+    public JigDataInfo[] JigGetData(string mcno, string lotno)
+    {
+        //throw new NotImplementedException();
+        JigDataInfo[] result = null;
+        SaveLogFile(mcno, lotno, "JigToolGetData", "", "");
+        //// Get jig data here
+        //// If LotNo != ""
+        bool isUseHp = IsUseJigControl(mcno);
+        if (isUseHp)
+        {
+            switch (mcno.Substring(0, 2))
+            {
+                case "WB":
+                    if (isUseHp)
+                    {
+                        result = JigGetApplyDataInfo(mcno);
+                    }
+                    else
+                    {
 
+                    }
 
+                    break;
+                case "TC":
+                case "FL":
+                    //JigDataInfo tmpJig = new JigDataInfo { Type = "Kanagata" };
+                    break;
+                default:
+                    break;
+            }
+        }
+        return result;
+    }
 }

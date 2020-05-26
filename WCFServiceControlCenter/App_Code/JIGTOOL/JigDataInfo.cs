@@ -36,5 +36,16 @@ public class JigDataInfo
     public string Warning { get; set; }
     [DataMember]
     public bool IsWarning { get; set; }
+    [DataMember]
+    public string BarCode { get; set; }
+    [DataMember]
+    public string SmallCode { get; set; }
+    [DataMember]
+    public string QrCodeByUser { get; set; }
+    [DataMember]
+    public string SubType { get; set; }
+    [DataMember]
+    public int Value { get; set; }
+
 
 }

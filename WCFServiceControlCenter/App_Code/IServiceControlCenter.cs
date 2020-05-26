@@ -20,6 +20,9 @@ public interface IServiceControlCenter
 
     [OperationContract]
     ItemCheckingResult JigToolChecking(ItemCheckingEventArgs e);
+
     [OperationContract]
-    List<JigDataInfo> JigToolGetData(string mcNo, string lotNo);
+    JigDataInfo[] JigGetData(string mcno, string lotno);
+
+
 }
