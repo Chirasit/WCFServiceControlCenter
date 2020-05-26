@@ -22,7 +22,9 @@ namespace WinFormTestWcf
         {
 
             ServiceReference1.ServiceControlCenterClient serviceClient = new ServiceControlCenterClient();
-
+            //List<JigDataInfo> tmp = serviceClient.jig("", "");
+            //serviceClient.jigto
+            JigDataInfo[] tmp = serviceClient.JigGetData("", "");
             ItemCheckingResult result = serviceClient.JigToolChecking(new ItemCheckingEventArgs());
             MessageBox.Show(result.WarningMessage);
             //MessageBox.Show(tmpStr);

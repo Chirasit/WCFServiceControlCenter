@@ -31,11 +31,11 @@
   <wsdl:message name="IServiceControlCenter_JigToolChecking_OutputMessage">
     <wsdl:part name="parameters" element="tns:JigToolCheckingResponse" />
   </wsdl:message>
-  <wsdl:message name="IServiceControlCenter_JigToolGetData_InputMessage">
-    <wsdl:part name="parameters" element="tns:JigToolGetData" />
+  <wsdl:message name="IServiceControlCenter_JigGetData_InputMessage">
+    <wsdl:part name="parameters" element="tns:JigGetData" />
   </wsdl:message>
-  <wsdl:message name="IServiceControlCenter_JigToolGetData_OutputMessage">
-    <wsdl:part name="parameters" element="tns:JigToolGetDataResponse" />
+  <wsdl:message name="IServiceControlCenter_JigGetData_OutputMessage">
+    <wsdl:part name="parameters" element="tns:JigGetDataResponse" />
   </wsdl:message>
   <wsdl:portType name="IServiceControlCenter">
     <wsdl:operation name="DoWork">
@@ -54,9 +54,9 @@
       <wsdl:input wsaw:Action="http://tempuri.org/IServiceControlCenter/JigToolChecking" message="tns:IServiceControlCenter_JigToolChecking_InputMessage" />
       <wsdl:output wsaw:Action="http://tempuri.org/IServiceControlCenter/JigToolCheckingResponse" message="tns:IServiceControlCenter_JigToolChecking_OutputMessage" />
     </wsdl:operation>
-    <wsdl:operation name="JigToolGetData">
-      <wsdl:input wsaw:Action="http://tempuri.org/IServiceControlCenter/JigToolGetData" message="tns:IServiceControlCenter_JigToolGetData_InputMessage" />
-      <wsdl:output wsaw:Action="http://tempuri.org/IServiceControlCenter/JigToolGetDataResponse" message="tns:IServiceControlCenter_JigToolGetData_OutputMessage" />
+    <wsdl:operation name="JigGetData">
+      <wsdl:input wsaw:Action="http://tempuri.org/IServiceControlCenter/JigGetData" message="tns:IServiceControlCenter_JigGetData_InputMessage" />
+      <wsdl:output wsaw:Action="http://tempuri.org/IServiceControlCenter/JigGetDataResponse" message="tns:IServiceControlCenter_JigGetData_OutputMessage" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="BasicHttpBinding_IServiceControlCenter" type="tns:IServiceControlCenter">
@@ -97,8 +97,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="JigToolGetData">
-      <soap:operation soapAction="http://tempuri.org/IServiceControlCenter/JigToolGetData" style="document" />
+    <wsdl:operation name="JigGetData">
+      <soap:operation soapAction="http://tempuri.org/IServiceControlCenter/JigGetData" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>

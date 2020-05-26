@@ -53,18 +53,18 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="JigToolGetData">
+  <xs:element name="JigGetData">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" name="mcNo" nillable="true" type="xs:string" />
-        <xs:element minOccurs="0" name="lotNo" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="mcno" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="lotno" nillable="true" type="xs:string" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="JigToolGetDataResponse">
+  <xs:element name="JigGetDataResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/" minOccurs="0" name="JigToolGetDataResult" nillable="true" type="q7:ArrayOfJigDataInfo" />
+        <xs:element xmlns:q7="http://schemas.datacontract.org/2004/07/" minOccurs="0" name="JigGetDataResult" nillable="true" type="q7:ArrayOfJigDataInfo" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

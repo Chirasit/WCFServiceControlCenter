@@ -80,13 +80,24 @@
   <xs:element name="ArrayOfJigDataInfo" nillable="true" type="tns:ArrayOfJigDataInfo" />
   <xs:complexType name="JigDataInfo">
     <xs:sequence>
+      <xs:element minOccurs="0" name="BarCode" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="ExpireValue" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Handling" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Id" type="xs:int" />
       <xs:element minOccurs="0" name="IsChange" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsPass" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsWarning" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Message_Eng" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Message_Thai" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="QrCodeByUser" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="ShortName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SmallCode" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Status" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SubType" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="Type" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Value" type="xs:int" />
+      <xs:element minOccurs="0" name="Warning" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
