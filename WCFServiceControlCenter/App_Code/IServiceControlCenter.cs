@@ -24,5 +24,12 @@ public interface IServiceControlCenter
     [OperationContract]
     JigDataInfo[] JigGetData(string mcno, string lotno);
 
+    [OperationContract]
+    JigDataInfo JigCheckData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string[] parameter);
+    [OperationContract]
+    ResultInfo JigSetupData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string[] parameter);
+    [OperationContract]
+    ResultInfo JigUpdateData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string[] parameter);
+
 
 }
