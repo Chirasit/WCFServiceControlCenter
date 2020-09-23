@@ -89,31 +89,31 @@ public class ServiceControlCenter : IServiceControlCenter
                     case "IC BURN": //1502     
                         flowPattern = 1502;
                         break;
-                    case "IC BURN_LOW YIELD": //1769
-                        flowPattern = 1769;
+                    case "IC BURN_LOW YIELD": //1725
+                        flowPattern = 1725;
                         break;
-                    case "ABNORMAL": //1267
+                    case "ABNORMAL": //1198
                         if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
                         {
                             SaveLogFile(e.McNo, e.LotNo, e.LotJudge, "Fail", "Current flow:=Insp.|QualityState:=" + row["QualityState"].ToString(), LogType.special_flow);
                             return afterLotEndResult;
                         }
-                        flowPattern = 1267;
+                        flowPattern = 1198;
                         break;
-                    case "AB_LOW YIELD": //1677
-                        flowPattern = 1677;
+                    case "AB_LOW YIELD": //1719
+                        flowPattern = 1719;
                         break;
-                    case "AB_IC BURN": //1676
-                        flowPattern = 1676;
+                    case "AB_IC BURN": //1720
+                        flowPattern = 1720;
                         break;
-                    case "AB_IC BURN_LOW YIELD": //1771
-                        flowPattern = 1771;
+                    case "AB_IC BURN_LOW YIELD": //1721
+                        flowPattern = 1721;
                         break;
                     case "BIN19": //1500
                         flowPattern = 1500;
                         break;
-                    case "BIN19_LOW YIELD": //1770
-                        flowPattern = 1770;
+                    case "BIN19_LOW YIELD": //1724
+                        flowPattern = 1724;
                         break;
                     case "BIN19_ABNORMAL": //1722
                         flowPattern = 1722;
@@ -121,13 +121,13 @@ public class ServiceControlCenter : IServiceControlCenter
                     case "BIN19_AB_LOW YIELD": //1723
                         flowPattern = 1723;
                         break;
-                    case "ASI": //1666
+                    case "ASI": //99999
                         if (currentFlowName.Trim() == "AUTO(2)ASISAMPLE" || currentFlowName.Trim() == "AUTO(3)ASISAMPLE")
                         {
                             SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "Fail", "This lot already in job[" + currentFlowId.ToString() + "] : " + currentFlowName, LogType.special_flow);
                             return afterLotEndResult;
                         }
-                        flowPattern = 1666;
+                        flowPattern = 99999;
                         break;
                         
                     case "ASI_LOW YIELD":
@@ -313,7 +313,7 @@ public class ServiceControlCenter : IServiceControlCenter
                                 flowPattern = 1197; //Add retest Auto4
                                 break;
                             default:
-                                flowPattern = 1666; //Add retest Auto4
+                                flowPattern = 99999; //Add retest Auto4
                                 break;
                         }         
                         break;
@@ -352,7 +352,7 @@ public class ServiceControlCenter : IServiceControlCenter
                                 flowPattern = 1655; //Add retest Auto4 > Low Yield
                                 break;
                             default:
-                                flowPattern = 1666; //Add retest Auto4
+                                flowPattern = 99999; //Add retest Auto4
                                 break;
                         }
                         break;
@@ -362,36 +362,36 @@ public class ServiceControlCenter : IServiceControlCenter
                 switch (currentFlowId)
                 {
                     case 108: //Auto2
-                        flowPattern = 1658; //Add retest Auto1 > IC Burn
+                        flowPattern = 1677; //Add retest Auto1 > IC Burn
                         break;
                     case 110: //Auto3
-                        flowPattern = 1659; //Add retest Auto2 > IC Burn
+                        flowPattern = 1676; //Add retest Auto2 > IC Burn
                         break;
                     case 119: //Auto4
-                        flowPattern = 1660; //Add retest Auto3 > IC Burn
+                        flowPattern = 1769; //Add retest Auto3 > IC Burn
                         break;
                     case 342: //asi 2 sample
                     case 370: //asi 3 sample
-                        flowPattern = 1502; //Add Low Yield
+                        flowPattern = 1502; //Add IC Burn
                         break;
                     default:
                         string ftLatestFlow = GetLatestFtFlow(lotId, nextStepNo);
                         switch (ftLatestFlow)
                         {
                             case "AUTO(1)":
-                                flowPattern = 1658; //Add retest Auto1 > IC Burn
+                                flowPattern = 1677; //Add retest Auto1 > IC Burn
                                 break;
                             case "AUTO(2)":
-                                flowPattern = 1659; //Add retest Auto2 > IC Burn
+                                flowPattern = 1676; //Add retest Auto2 > IC Burn
                                 break;
                             case "AUTO(3)":
-                                flowPattern = 1660; //Add retest Auto3 > IC Burn
+                                flowPattern = 1769; //Add retest Auto3 > IC Burn
                                 break;
                             case "AUTO(4)":
-                                flowPattern = 1661; //Add retest Auto4 > IC Burn
+                                flowPattern = 1770; //Add retest Auto4 > IC Burn
                                 break;
                             default:
-                                flowPattern = 1666; //Add retest Auto4
+                                flowPattern = 99999; //Add retest Auto4
                                 break;
                         }
                         break;
@@ -424,7 +424,7 @@ public class ServiceControlCenter : IServiceControlCenter
         
         int currentStepNo = 0;
         bool isNow = true;
-        if (flowPattern == 1267)
+        if (flowPattern == 1198)
         {
             try
             {
@@ -483,10 +483,11 @@ public class ServiceControlCenter : IServiceControlCenter
 
                         if (Convert.ToInt32(row["step_no"]) == nextStepNo)
                         {
-                            if ((row["job_name"].ToString() == "100% INSP.") || (row["job_name"].ToString() == "AUTO(2)ASISAMPLE") || (row["job_name"].ToString() == "AUTO(3)ASISAMPLE"))
+                            if ((row["job_name"].ToString() == "100% INSP.") || (row["job_name"].ToString() == "SAMPLING INSP") ||  (row["job_name"].ToString() == "AUTO(2)ASISAMPLE") || (row["job_name"].ToString() == "AUTO(3)ASISAMPLE"))
                             {
                                 isNextInsp = true;
                                 currentStepNo = Convert.ToInt32(row["step_no"]);
+                                isNow = false;
                             }
                             else
                             {
@@ -510,7 +511,7 @@ public class ServiceControlCenter : IServiceControlCenter
             }
             
         }
-        else if (flowPattern == 1666)
+        else if (flowPattern == 99999) //Future flow
         {
             DataTable dtTransLot = GetTransLotFlow(lotId);
             if (dtTransLot.Rows.Count > 0)
