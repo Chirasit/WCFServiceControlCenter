@@ -436,8 +436,11 @@ public class ServiceControlCenter : IServiceControlCenter
                         DataRow row = dtTransLot.Rows[i];
                         if ((row["job_name"].ToString() == "AUTO(2)ASISAMPLE" && Convert.ToInt32(row["is_skipped"]) == 0 && currentStepNo == 0) || (row["job_name"].ToString() == "AUTO(3)ASISAMPLE" && Convert.ToInt32(row["is_skipped"]) == 0 && currentStepNo == 0))
                         {
-                            currentStepNo = Convert.ToInt32(row["step_no"]);
-                            isNow = false;
+                            if (nextStepNo == Convert.ToInt32(row["step_no"]))
+                            {
+                                isNow = false;
+                            }                            
+                            currentStepNo = Convert.ToInt32(row["step_no"]);                            
                             continue;
                         }
                         else if (currentStepNo != 0 && Convert.ToInt32(row["is_skipped"]) == 0)
@@ -446,11 +449,11 @@ public class ServiceControlCenter : IServiceControlCenter
                             break;
                         }
                     }
-                    if (currentStepNo == 0 || nextStepNo == 0)
-                    {
-                        SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(" + lotJudgement + ")", "FAIL", "CANNOT GET STEP_NO", LogType.special_flow);
-                        return afterLotEndResult;
-                    }
+                    //if (currentStepNo == 0 || nextStepNo == 0)
+                    //{
+                    //    SaveLogFile(mcNo, lotNo, "AddFtInspSpecialFlow(" + lotJudgement + ")", "FAIL", "CANNOT GET STEP_NO", LogType.special_flow);
+                    //    return afterLotEndResult;
+                    //}
                     //if (flowPattern == 1267)
                     //{
                     //    DataTable dtCurrentLot = GetCurrentTranLot(lotNo);
@@ -484,6 +487,44 @@ public class ServiceControlCenter : IServiceControlCenter
                         if (Convert.ToInt32(row["step_no"]) == nextStepNo)
                         {
                             if ((row["job_name"].ToString() == "100% INSP.") || (row["job_name"].ToString() == "SAMPLING INSP") ||  (row["job_name"].ToString() == "AUTO(2)ASISAMPLE") || (row["job_name"].ToString() == "AUTO(3)ASISAMPLE"))
+                            {
+                                isNextInsp = true;
+                                currentStepNo = Convert.ToInt32(row["step_no"]);
+                                isNow = false;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                        else if (Convert.ToInt32(row["is_skipped"]) == 0)
+                        {
+                            if (isNextInsp)
+                            {
+                                nextStepNo = Convert.ToInt32(row["step_no"]);
+                                break;
+                            }
+                            else
+                            {
+                                currentStepNo = Convert.ToInt32(row["step_no"]);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                DataTable dtTransLot = GetTransLotFlow(lotId);
+                if (dtTransLot.Rows.Count > 0)
+                {
+                    bool isNextInsp = false;
+                    for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+                    {
+                        DataRow row = dtTransLot.Rows[i];
+
+                        if (Convert.ToInt32(row["step_no"]) == nextStepNo)
+                        {
+                            if ((row["job_name"].ToString() == "100% INSP.") || (row["job_name"].ToString() == "SAMPLING INSP") || (row["job_name"].ToString() == "AUTO(2)ASISAMPLE") || (row["job_name"].ToString() == "AUTO(3)ASISAMPLE"))
                             {
                                 isNextInsp = true;
                                 currentStepNo = Convert.ToInt32(row["step_no"]);
@@ -864,7 +905,7 @@ public class ServiceControlCenter : IServiceControlCenter
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "[atom].[sp_set_trans_special_flow]";
+            cmd.CommandText = "[atom].[sp_set_trans_special_flow]"; 
             cmd.Parameters.Add("@lot_id", System.Data.SqlDbType.Int).Value = lotId;
             cmd.Parameters.Add("@step_no", System.Data.SqlDbType.Int).Value = currentStepNo;
             cmd.Parameters.Add("@back_step_no", System.Data.SqlDbType.Int).Value = nextStepNo;
@@ -1354,6 +1395,8 @@ public class ServiceControlCenter : IServiceControlCenter
                 else
                 {
                     jigInfo.IsPass = true;
+                    jigInfo.Id = 0;
+                    
                     jigInfo.Message_Eng = dataRow["Error_Message_ENG"].ToString();
                     jigInfo.Message_Thai = dataRow["Error_Message_THA"].ToString();
                     jigInfo.Handling = dataRow["Handling"].ToString();
@@ -1393,10 +1436,13 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 else
                 {
-                    jigInfo.Id = Convert.ToInt32(dataRow["id"]);
+                    //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
                     jigInfo.IsPass = true;
-                    jigInfo.SmallCode = dataRow["smallcode"].ToString();
-                    jigInfo.SubType = dataRow["SubType"].ToString();
+                    jigInfo.Message_Eng = dataRow["Error_Message_ENG"].ToString();
+                    jigInfo.Message_Thai = dataRow["Error_Message_THA"].ToString();
+                    jigInfo.Handling = dataRow["Handling"].ToString();
+                    //jigInfo.SmallCode = dataRow["smallcode"].ToString();
+                    //jigInfo.SubType = dataRow["SubType"].ToString();
                 }
             }
         }        
@@ -1487,7 +1533,7 @@ public class ServiceControlCenter : IServiceControlCenter
     private JigDataInfo CapillaryCheck(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string tpCode)
     {
         jigInfo.IsPass = true;
-        if (tpCode == ".")
+        if (tpCode == "." || tpCode == "")
         {
             return jigInfo;
         }
