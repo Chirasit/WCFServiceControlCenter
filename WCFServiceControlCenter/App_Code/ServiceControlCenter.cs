@@ -83,6 +83,32 @@ public class ServiceControlCenter : IServiceControlCenter
                 int flowPattern = 0;
                 switch (e.LotJudge)
                 {
+                    case "ROHM JUDGE": //1791
+                        flowPattern = 1791;
+                        break;
+                    case "QC JUDGE": //1792
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1792);
+                        return afterLotEndResult;                        
+                    case "ALARM BIN27": //1790
+                        flowPattern = 1790;
+                        break;
+                    case "ABNORMAL_QC": //88888
+                        AddSpecialFlowBin27Judge(lotId,e.McNo,e.LotNo,1792);
+                        if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
+                        {
+                            SaveLogFile(e.McNo, e.LotNo, e.LotJudge, "Fail", "Current flow:=Insp.|QualityState:=" + row["QualityState"].ToString(), LogType.special_flow);
+                            return afterLotEndResult;
+                        }
+                        flowPattern = 1198;
+                        break;
+                    case "AB_LOW YIELD_QC": //88888
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1792);
+                        flowPattern = 1719;
+                        break;
+                    case "LOW YIELD_QC":
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1792);
+                        flowPattern = 1501;
+                        break;
                     case "LOW YIELD": //1501
                         flowPattern = 1501;
                         break;
@@ -109,16 +135,16 @@ public class ServiceControlCenter : IServiceControlCenter
                     case "AB_IC BURN_LOW YIELD": //1721
                         flowPattern = 1721;
                         break;
-                    case "BIN19": //1500
+                    case "BIN27": //1500
                         flowPattern = 1500;
                         break;
-                    case "BIN19_LOW YIELD": //1724
+                    case "BIN27_LOW YIELD": //1724
                         flowPattern = 1724;
                         break;
-                    case "BIN19_ABNORMAL": //1722
+                    case "BIN27_ABNORMAL": //1722
                         flowPattern = 1722;
                         break;
-                    case "BIN19_AB_LOW YIELD": //1723
+                    case "BIN27_AB_LOW YIELD": //1723
                         flowPattern = 1723;
                         break;
                     case "ASI": //99999
@@ -472,7 +498,7 @@ public class ServiceControlCenter : IServiceControlCenter
                 afterLotEndResult.ErrorMessage = ex.Message;
             }
         }
-        else if (flowPattern == 1501 || flowPattern == 1502)
+        else if (flowPattern == 1501 || flowPattern == 1502 || flowPattern == 1719 || flowPattern == 1720 || flowPattern == 1721)
         {
             if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
             {
@@ -676,6 +702,42 @@ public class ServiceControlCenter : IServiceControlCenter
             }
         }
         return ret;
+    }
+    private void AddSpecialFlowBin27Judge(int? lotId, string mcNo, string lotNo,int flowPattern)
+    {
+        int currentStepNo = 0;
+        int nextStepNo = 0;
+        DataTable dtTransLot = GetTransLotFlow(lotId);
+        bool isNext = false;
+        if (dtTransLot.Rows.Count > 0)
+        {
+            for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+            {
+                DataRow row = dtTransLot.Rows[i];
+                if (Convert.ToInt32(row["is_skipped"]) == 0 && (row["job_name"].ToString().Length > 4) && row["job_name"].ToString().Substring(0, 4) == "AUTO")
+                {
+                    currentStepNo = Convert.ToInt32(row["step_no"]);
+                }
+            }
+            if (currentStepNo != 0)
+            {
+                for (int i = 0; i < dtTransLot.Rows.Count - 1; i++)
+                {
+                    DataRow row = dtTransLot.Rows[i];
+                    if (isNext && Convert.ToInt32(row["is_skipped"]) == 0)
+                    {
+                        nextStepNo = Convert.ToInt32(row["step_no"]);
+                        break;
+                    }
+                    else if (!isNext && currentStepNo == Convert.ToInt32(row["step_no"]))
+                    {
+                        isNext = true;
+                    }
+                }
+            }
+        }
+
+        AddSpecialFlow_By_FlowPattern(mcNo, lotNo, lotId, currentStepNo, nextStepNo, flowPattern, false);
     }
     private DataTable GetTransLotFlow(int? lotId)
     {
