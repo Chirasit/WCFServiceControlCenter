@@ -1232,6 +1232,10 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 resultInfo = WireUpdate(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
                 break;
+            case "Kanagata":
+                resultInfo = KanagataUpdate(mcNo, opNo, lotNo, jigInfo, jigType);
+                break;
+
             default:
                 break;
         }
@@ -1278,6 +1282,17 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 resultInfo = WireSetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
                 break;
+            case "Kanagata":
+                //if (parameter == null)
+                //{
+                //    SaveLogFile(mcNo, lotNo, "JigSetupData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                //    resultInfo.HasError = true;
+                //    resultInfo.ErrorMessage = "parameter is null";
+                //    resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ Parameter";
+                //    break;
+                //}
+                resultInfo = KanagataSetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                break;
             default:
                 break;
         }
@@ -1322,12 +1337,127 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 jigInfo = WireCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
                 break;
+            case "Kanagata":
+                if (parameter == null)
+                {
+                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    jigInfo.Message_Eng = "parameter is null";
+                    jigInfo.Message_Thai = "ไม่พบข้อมูลของ Parameter";
+                    break;
+                }
+                jigInfo = KanagataCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                break;
             default:
                 break;
         }
         return jigInfo;
     }
     #region JIG
+    #region KANAGATA
+    public ResultInfo KanagataUpdate(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
+    {
+        return new ResultInfo();
+    }
+    public ResultInfo KanagataSetup(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package)
+    {
+        ResultInfo resultInfo = new ResultInfo();
+        JigDataInfo resultCheck = KanagataCheck(mcNo, opNo, lotNo, jigInfo, jigInfo.Type, package);
+        if (!resultCheck.IsPass)
+        {
+            resultInfo.HasError = true;
+            resultInfo.ErrorMessage = resultCheck.Message_Eng;
+            resultInfo.ErrorMessage_Tha = resultCheck.Message_Thai;
+            resultInfo.Handling = resultCheck.Handling;
+            goto End;
+        }
+        resultInfo.HasError = true;
+        DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "sp_set_kanagata_setup_machine_V2", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_kanagata_setup_machine_v2]";
+            cmd.Parameters.Add("@KanagataName", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@UserID", SqlDbType.VarChar).Value = opNo;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            resultInfo.HasError = false;
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+                resultInfo.Handling = dataRow["Handling"].ToString();
+                //resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
+                //resultInfo.JigDataInfo.SmallCode = dataRow["smallCode"].ToString();
+            }            
+        }
+        End:
+        return resultInfo;
+    }
+    public JigDataInfo KanagataCheck(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package)
+    {
+        jigInfo.IsPass = true;
+        if (package == "" || lotNo == "")
+        {
+            return jigInfo;
+        }
+        DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "sp_get_kanagata_checkpackage_v2", "", jigInfo.QrCodeByUser + "|" + lotNo, LogType.jig_material);
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_kanagata_checkpackage_v2]";
+            cmd.Parameters.Add("@kanagataNo", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@jigset", SqlDbType.VarChar).Value = package;
+            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                jigInfo.IsPass = false;
+                jigInfo.Message_Eng = dataRow["Error_Message_ENG"].ToString();
+                jigInfo.Message_Thai = dataRow["Error_Message_THA"].ToString();
+                jigInfo.Handling = dataRow["Handling"].ToString();
+            }
+            else
+            {
+                jigInfo.Id = Convert.ToInt32(dataRow["id"]);
+                jigInfo.IsPass = true;
+                jigInfo.SubType = dataRow["basetype"].ToString();
+                jigInfo.Name = dataRow["name"].ToString();
+            }
+        }
+        return jigInfo;
+    }
+    #endregion
     #region COLLET
     #endregion
     #region TSUKIAGE
@@ -1526,6 +1656,7 @@ public class ServiceControlCenter : IServiceControlCenter
             cmd.Parameters.Add("@LOTNo", SqlDbType.VarChar).Value = lotNo;
             cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
             cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+            cmd.Parameters.Add("@LTValue", SqlDbType.Int).Value = jigInfo.ValuePerLot;
             cmd.Connection.Open();
             using (SqlDataReader rd = cmd.ExecuteReader())
             {
@@ -1588,6 +1719,8 @@ public class ServiceControlCenter : IServiceControlCenter
             resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
             resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
             resultInfo.Handling = dataRow["Handling"].ToString();
+            resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
+            resultInfo.JigDataInfo.SmallCode = dataRow["smallCode"].ToString();
         }
         End:
         return resultInfo;
