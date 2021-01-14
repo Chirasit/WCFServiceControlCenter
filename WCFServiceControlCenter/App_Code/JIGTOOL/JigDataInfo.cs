@@ -46,6 +46,8 @@ public class JigDataInfo
     public string SubType { get; set; }
     [DataMember]
     public int Value { get; set; }
+    [DataMember]
+    public int ValuePerLot { get; set; }
 
 
 }
