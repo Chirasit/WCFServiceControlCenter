@@ -1352,6 +1352,36 @@ public class ServiceControlCenter : IServiceControlCenter
         }
         return jigInfo;
     }
+    public ResultInfo JigRemoveData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
+    {
+        ResultInfo ret = new ResultInfo();
+        ret.HasError = false;
+        SaveLogFile(mcNo, lotNo, "JigRemoveData[" + jigType + "]", "", "", LogType.jig_material);
+        if (string.IsNullOrEmpty(jigInfo.QrCodeByUser))
+        {
+            ret.HasError = true;
+            ret.ErrorMessage = "Can not remove";
+            ret.ErrorMessage_Tha = "ไม่สามารถลบได้";
+            ret.Handling = "Qr = NULL";
+            return ret;
+        }
+        switch (jigType)
+        {
+            case "Capillary":               
+                break;
+            case "HP":
+            case "PP":
+                break;
+            case "Wire":
+                break;
+            case "Kanagata":
+                ret = KanagataRemove(mcNo, opNo, lotNo, jigInfo, jigType);
+                break;
+            default:
+                break;
+        }
+        return ret;
+    }
     #region JIG
     #region KANAGATA
     public ResultInfo KanagataUpdate(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
@@ -1403,7 +1433,13 @@ public class ServiceControlCenter : IServiceControlCenter
                 resultInfo.Handling = dataRow["Handling"].ToString();
                 //resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
                 //resultInfo.JigDataInfo.SmallCode = dataRow["smallCode"].ToString();
-            }            
+            }
+            else
+            {
+                resultInfo.JigDataInfo = new JigDataInfo();
+                resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
+                resultInfo.JigDataInfo.SubType = dataRow["subtype"].ToString();
+            }
         }
         End:
         return resultInfo;
@@ -1449,13 +1485,56 @@ public class ServiceControlCenter : IServiceControlCenter
             }
             else
             {
-                jigInfo.Id = Convert.ToInt32(dataRow["id"]);
+                //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
                 jigInfo.IsPass = true;
                 jigInfo.SubType = dataRow["basetype"].ToString();
-                jigInfo.Name = dataRow["name"].ToString();
+                //jigInfo.Name = dataRow["name"].ToString();
             }
         }
         return jigInfo;
+    }
+    public ResultInfo KanagataRemove(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
+    {
+        ResultInfo resultInfo = new ResultInfo();       
+        resultInfo.HasError = true;
+        DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "[sp_set_socket_outoffmachine]", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_socket_outoffmachine]";
+            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            resultInfo.HasError = false;
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                resultInfo.HasError = false;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+        }
+        return resultInfo;
     }
     #endregion
     #region COLLET
@@ -1715,12 +1794,19 @@ public class ServiceControlCenter : IServiceControlCenter
         {
             DataRow dataRow = dt.Rows[0];
             resultInfo.HasError = false;
-            if (dataRow["Is_Pass"].ToString() == "FALSE") resultInfo.HasError = true;
-            resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
-            resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
-            resultInfo.Handling = dataRow["Handling"].ToString();
-            resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
-            resultInfo.JigDataInfo.SmallCode = dataRow["smallCode"].ToString();
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                resultInfo.JigDataInfo = new JigDataInfo();
+                resultInfo.Handling = dataRow["Handling"].ToString();
+                resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
+                resultInfo.JigDataInfo.SmallCode = dataRow["smallCode"].ToString();
+            }   
         }
         End:
         return resultInfo;
