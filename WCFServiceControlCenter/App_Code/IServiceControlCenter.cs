@@ -30,6 +30,8 @@ public interface IServiceControlCenter
     ResultInfo JigSetupData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string[] parameter);
     [OperationContract]
     ResultInfo JigUpdateData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string[] parameter);
+    [OperationContract]
+    ResultInfo JigRemoveData(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType);
 
 
 }
