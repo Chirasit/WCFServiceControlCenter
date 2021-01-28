@@ -1212,10 +1212,11 @@ public class ServiceControlCenter : IServiceControlCenter
             resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ qrcode";
             return resultInfo;
         }
-        switch (jigType)
+        string[] strSplit = jigType.Split('-');
+        switch (strSplit[0])
         {
             case "Capillary":                
-                resultInfo = CapillaryUpdate(mcNo, opNo, lotNo, jigInfo, jigType);
+                resultInfo = CapillaryUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
                 break;
             case "HP":
             case "PP":
@@ -1224,16 +1225,16 @@ public class ServiceControlCenter : IServiceControlCenter
             case "Wire":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     resultInfo.HasError = true;
                     resultInfo.ErrorMessage = "parameter is null";
                     resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                resultInfo = WireUpdate(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                resultInfo = WireUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Kanagata":
-                resultInfo = KanagataUpdate(mcNo, opNo, lotNo, jigInfo, jigType);
+                resultInfo = KanagataUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
                 break;
 
             default:
@@ -1252,35 +1253,35 @@ public class ServiceControlCenter : IServiceControlCenter
             resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ qrcode";
             return resultInfo;
         }
-
-        switch (jigType)
+        string[] strSplit = jigType.Split('-');
+        switch (strSplit[0])
         {
             case "Capillary":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     resultInfo.HasError = true;
                     resultInfo.ErrorMessage = "parameter is null";
                     resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                SaveLogFile(mcNo, lotNo, "CapillarySetup[" + jigType + "]", "", "QRCode := " + jigInfo.QrCodeByUser + " | TPCode := " + parameter[0], LogType.jig_material);
-                resultInfo = CapillarySetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                SaveLogFile(mcNo, lotNo, "CapillarySetup[" + strSplit[0] + "]", "", "QRCode := " + jigInfo.QrCodeByUser + " | TPCode := " + parameter[0], LogType.jig_material);
+                resultInfo = CapillarySetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "HP":
             case "PP":
-                resultInfo = HpPpSetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                resultInfo = HpPpSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Wire":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigSetupData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     resultInfo.HasError = true;
                     resultInfo.ErrorMessage = "parameter is null";
                     resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                resultInfo = WireSetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                resultInfo = WireSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Kanagata":
                 //if (parameter == null)
@@ -1291,7 +1292,7 @@ public class ServiceControlCenter : IServiceControlCenter
                 //    resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ Parameter";
                 //    break;
                 //}
-                resultInfo = KanagataSetup(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                resultInfo = KanagataSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             default:
                 break;
@@ -1310,42 +1311,43 @@ public class ServiceControlCenter : IServiceControlCenter
             return jigInfo;
         } 
         jigInfo.IsPass = false;
-        switch (jigType)
+        string[] strSplit = jigType.Split('-');
+        switch (strSplit[0])
         {
             case "Capillary":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     jigInfo.Message_Eng = "parameter is null";
                     jigInfo.Message_Thai = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                jigInfo = CapillaryCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
-                SaveLogFile(mcNo, lotNo, "CapillaryCheck[" + jigType + "]", "", "", LogType.jig_material);
+                jigInfo = CapillaryCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
+                SaveLogFile(mcNo, lotNo, "CapillaryCheck[" + strSplit[0] + "]", "", "", LogType.jig_material);
                 break;
             case "HP":
             case "PP":
-                jigInfo = HpPpCheck(mcNo, opNo, lotNo, jigInfo, jigType,parameter[0]);
+                jigInfo = HpPpCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Wire":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     jigInfo.Message_Eng = "parameter is null";
                     jigInfo.Message_Thai = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                jigInfo = WireCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                jigInfo = WireCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Kanagata":
                 if (parameter == null)
                 {
-                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + jigType + "]", "", "parameter is null", LogType.jig_material);
+                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
                     jigInfo.Message_Eng = "parameter is null";
                     jigInfo.Message_Thai = "ไม่พบข้อมูลของ Parameter";
                     break;
                 }
-                jigInfo = KanagataCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter[0]);
+                jigInfo = KanagataCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             default:
                 break;
@@ -1365,17 +1367,30 @@ public class ServiceControlCenter : IServiceControlCenter
             ret.Handling = "Qr = NULL";
             return ret;
         }
-        switch (jigType)
+        string[] strSplit = jigType.Split('-');
+        switch (strSplit[0])
         {
-            case "Capillary":               
+            case "Capillary":
+                ret.HasError = true;
+                ret.ErrorMessage = "This function cannot use";
+                ret.ErrorMessage_Tha = "ฟังก์ชันนี้ยังไม่เปิดให้ใช้งาน";
+                //ret.Handling = "Qr = NULL";
                 break;
             case "HP":
             case "PP":
+                ret.HasError = true;
+                ret.ErrorMessage = "This function cannot use";
+                ret.ErrorMessage_Tha = "ฟังก์ชันนี้ยังไม่เปิดให้ใช้งาน";
+                //ret.Handling = "Qr = NULL";
                 break;
             case "Wire":
+                ret.HasError = true;
+                ret.ErrorMessage = "This function cannot use";
+                ret.ErrorMessage_Tha = "ฟังก์ชันนี้ยังไม่เปิดให้ใช้งาน";
+                //ret.Handling = "Qr = NULL";
                 break;
             case "Kanagata":
-                ret = KanagataRemove(mcNo, opNo, lotNo, jigInfo, jigType);
+                ret = KanagataRemove(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
                 break;
             default:
                 break;
