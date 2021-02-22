@@ -161,6 +161,29 @@ public class ServiceControlCenter : IServiceControlCenter
                     case "ASI_ICBURN_LOW YIELD":
 
                         break;
+                    case "ALARM BIN27-CF":
+                        flowPattern = 1807;
+                        break;
+                    case "NG TEST": //1808
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1808);
+                        return afterLotEndResult;
+                    case "LOW YIELD_NG":
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1808);
+                        flowPattern = 1501;
+                        break;
+                    case "AB_LOW YIELD_NG":
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1808);
+                        flowPattern = 1719;
+                        break;
+                    case "ABNORMAL_NG":
+                        AddSpecialFlowBin27Judge(lotId, e.McNo, e.LotNo, 1808);
+                        if (currentFlowId == 142 || currentFlowId == 11 || currentFlowId == 266)
+                        {
+                            SaveLogFile(e.McNo, e.LotNo, e.LotJudge, "Fail", "Current flow:=Insp.|QualityState:=" + row["QualityState"].ToString(), LogType.special_flow);
+                            return afterLotEndResult;
+                        }
+                        flowPattern = 1198;
+                        break;
                     default:                       
                         break;
                 }
@@ -1091,7 +1114,7 @@ public class ServiceControlCenter : IServiceControlCenter
             FileInfo fi = new FileInfo(strPath);
             if (fi.Exists && fi.Length > 2097152)
             {
-                //File.Move(strPath, strPathBackup);
+                File.Move(strPath, strPathBackup);
                 File.Delete(strPath);
             }
             using (StreamWriter sw = new StreamWriter(strPath, true))
@@ -1349,6 +1372,8 @@ public class ServiceControlCenter : IServiceControlCenter
                 }
                 jigInfo = KanagataCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
+            case "Socket":
+                break;
             default:
                 break;
         }
@@ -1398,7 +1423,201 @@ public class ServiceControlCenter : IServiceControlCenter
         return ret;
     }
     #region JIG
+    #region SOCKET
+    public ResultInfo SocketSetup(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package, int? inputQty = null)
+    {
+        ResultInfo resultInfo = new ResultInfo();
+        JigDataInfo resultCheck = SocketCheck(mcNo, opNo, lotNo, jigInfo, jigInfo.Type, package, inputQty);
+        if (!resultCheck.IsPass)
+        {
+            resultInfo.HasError = true;
+            resultInfo.ErrorMessage = resultCheck.Message_Eng;
+            resultInfo.ErrorMessage_Tha = resultCheck.Message_Thai;
+            resultInfo.Handling = resultCheck.Handling;
+            goto End;
+        }
+        resultInfo.HasError = true;
+        DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "sp_set_socket_setup", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_socket_setup]";
+            cmd.Parameters.Add("@QRCodeIn", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            resultInfo.HasError = false;
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                resultInfo.JigDataInfo = new JigDataInfo();
+                resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
+                resultInfo.JigDataInfo.SubType = dataRow["subtype"].ToString();
+                
+                
+            }
+        }
+        End:
+        return resultInfo;
+    }
+    public JigDataInfo SocketCheck(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package, int? inputQty = null)
+    {
+        jigInfo.IsPass = true;
+        if (package == "" || lotNo == "")
+        {
+            return jigInfo;
+        }
+        SaveLogFile(mcNo, lotNo, "sp_get_socket_setup", "", jigInfo.QrCodeByUser + "|" + lotNo, LogType.jig_material);
+        DataTable dt = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_socket_setup]";
+            cmd.Parameters.Add("@QRCodeIn", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+            if (string.IsNullOrEmpty(lotNo)) cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
+            if (string.IsNullOrEmpty(package)) cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            if (inputQty.HasValue) cmd.Parameters.Add("@DataInput", SqlDbType.Int).Value = inputQty.Value;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                jigInfo.IsPass = false;
+                jigInfo.Message_Eng = dataRow["Error_Message_ENG"].ToString();
+                jigInfo.Message_Thai = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                jigInfo.IsPass = true;
+            }
+        }
+
+        return jigInfo;
+    }
+    private ResultInfo SocketCheck_CommonPackage(string mcNo, string opNo, string lotNo, string qrCode, string package)
+    {
+        ResultInfo resultInfo = new ResultInfo();
+        resultInfo.HasError = true;
+        SaveLogFile(mcNo, lotNo, "sp_get_socket_check_common_package", "", qrCode + "|" + lotNo, LogType.jig_material);
+        DataTable dt = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_socket_check_common_package]";
+            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = qrCode;
+            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
+                resultInfo.HasError = false;
+                //jigInfo.SubType = dataRow["basetype"].ToString();
+                //jigInfo.Name = dataRow["name"].ToString();
+            }
+        }
+        return resultInfo;
+    }
+    private JigDataInfo SocketCheck_Lifetime(string mcNo, string opNo, string lotNo, string qrCode, string package)
+    {
+        ResultInfo resultInfo = new ResultInfo();
+        resultInfo.HasError = true;
+        SaveLogFile(mcNo, lotNo, "sp_get_socket_check_common_package", "", qrCode + "|" + lotNo, LogType.jig_material);
+        DataTable dt = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_socket_check_common_package]";
+            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = qrCode;
+            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dt.Load(rd);
+                }
+            }
+            cmd.Connection.Close();
+        }
+        if (dt.Rows.Count > 0)
+        {
+            DataRow dataRow = dt.Rows[0];
+            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
+            if (dataRow["Is_Pass"].ToString() == "FALSE")
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            }
+            else
+            {
+                //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
+                resultInfo.HasError = false;
+                //jigInfo.SubType = dataRow["basetype"].ToString();
+                //jigInfo.Name = dataRow["name"].ToString();
+            }
+        }
+        return null;
+    }
+    #endregion
     #region KANAGATA
+
     public ResultInfo KanagataUpdate(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
     {
         return new ResultInfo();
@@ -1513,13 +1732,13 @@ public class ServiceControlCenter : IServiceControlCenter
         ResultInfo resultInfo = new ResultInfo();       
         resultInfo.HasError = true;
         DataTable dt = new DataTable();
-        SaveLogFile(mcNo, lotNo, "[sp_set_socket_outoffmachine]", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+        SaveLogFile(mcNo, lotNo, "[sp_set_kanagata_outoffmachine]", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
         using (SqlCommand cmd = new SqlCommand())
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_socket_outoffmachine]";
-            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_kanagata_outoffmachine]";
+            cmd.Parameters.Add("@KanagataNo", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
             cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
             cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
             cmd.Connection.Open();
