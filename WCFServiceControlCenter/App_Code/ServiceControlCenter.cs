@@ -51,6 +51,9 @@ public class ServiceControlCenter : IServiceControlCenter
     /// <returns></returns>
     public AfterLotEndResult AfterLotEnd(AfterLotEndEventArgs e)
     {
+
+
+
         AfterLotEndResult afterLotEndResult = new AfterLotEndResult();
         afterLotEndResult.HasError = false;
         afterLotEndResult.WarningMessage = "";
@@ -58,6 +61,10 @@ public class ServiceControlCenter : IServiceControlCenter
         SaveLogFile(e.McNo, e.LotNo, "AfterLotEnd", "NULL", "LotJudge := " + e.LotJudge, LogType.special_flow);
         if (e != null)
         {
+            if (e.LotJudge == "")
+            {
+                return afterLotEndResult;
+            }
             int? lotId = null;
             int? currentFlowId = null;
             string currentFlowName = "";
@@ -1229,7 +1236,7 @@ public class ServiceControlCenter : IServiceControlCenter
         SaveLogFile(mcNo, lotNo, "JigUpdateData[" + jigType + "]", "", "", LogType.jig_material);
         if (string.IsNullOrEmpty(jigInfo.QrCodeByUser))
         {
-            SaveLogFile(mcNo, lotNo, "JigSetupData[" + jigType + "]", "Fail", "not found QrCode", LogType.jig_material);
+            SaveLogFile(mcNo, lotNo, "JigUpdateData[" + jigType + "]", "Fail", "not found QrCode", LogType.jig_material);
             resultInfo.HasError = true;
             resultInfo.ErrorMessage = "qrcode is null";
             resultInfo.ErrorMessage_Tha = "ไม่พบข้อมูลของ qrcode";
@@ -1257,7 +1264,7 @@ public class ServiceControlCenter : IServiceControlCenter
                 resultInfo = WireUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Kanagata":
-                resultInfo = KanagataUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
+                //resultInfo = KanagataUpdate(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
                 break;
 
             default:
@@ -1293,7 +1300,15 @@ public class ServiceControlCenter : IServiceControlCenter
                 break;
             case "HP":
             case "PP":
-                resultInfo = HpPpSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
+                if (parameter == null)
+                {
+                    resultInfo = HpPpSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], "");
+                }
+                else
+                {
+                    resultInfo = HpPpSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
+                }
+                
                 break;
             case "Wire":
                 if (parameter == null)
@@ -1316,6 +1331,9 @@ public class ServiceControlCenter : IServiceControlCenter
                 //    break;
                 //}
                 resultInfo = KanagataSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
+                break;
+            case "Socket":
+                resultInfo = SocketSetup(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             default:
                 break;
@@ -1373,6 +1391,23 @@ public class ServiceControlCenter : IServiceControlCenter
                 jigInfo = KanagataCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
                 break;
             case "Socket":
+                if (parameter == null)
+                {
+                    SaveLogFile(mcNo, lotNo, "JigCheckData[" + strSplit[0] + "]", "", "parameter is null", LogType.jig_material);
+                    jigInfo.Message_Eng = "parameter is null";
+                    jigInfo.Message_Thai = "ไม่พบข้อมูลของ Parameter";
+                    break;
+                }
+                if (parameter.Length == 2)
+                {
+                    int inputQty = 0;
+                    int.TryParse(parameter[1], out inputQty);
+                    jigInfo = SocketCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0], inputQty);
+                }
+                else
+                {
+                    jigInfo = SocketCheck(mcNo, opNo, lotNo, jigInfo, strSplit[0], parameter[0]);
+                }                
                 break;
             default:
                 break;
@@ -1417,6 +1452,9 @@ public class ServiceControlCenter : IServiceControlCenter
             case "Kanagata":
                 ret = KanagataRemove(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
                 break;
+            case "Socket":
+                ret = SocketRemove(mcNo, opNo, lotNo, jigInfo, strSplit[0]);
+                break;
             default:
                 break;
         }
@@ -1427,14 +1465,17 @@ public class ServiceControlCenter : IServiceControlCenter
     public ResultInfo SocketSetup(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package, int? inputQty = null)
     {
         ResultInfo resultInfo = new ResultInfo();
-        JigDataInfo resultCheck = SocketCheck(mcNo, opNo, lotNo, jigInfo, jigInfo.Type, package, inputQty);
-        if (!resultCheck.IsPass)
+        if (package != "")
         {
-            resultInfo.HasError = true;
-            resultInfo.ErrorMessage = resultCheck.Message_Eng;
-            resultInfo.ErrorMessage_Tha = resultCheck.Message_Thai;
-            resultInfo.Handling = resultCheck.Handling;
-            goto End;
+            JigDataInfo resultCheck = SocketCheck(mcNo, opNo, lotNo, jigInfo, jigInfo.Type, package, inputQty);
+            if (!resultCheck.IsPass)
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = resultCheck.Message_Eng;
+                resultInfo.ErrorMessage_Tha = resultCheck.Message_Thai;
+                resultInfo.Handling = resultCheck.Handling;
+                goto End;
+            }
         }
         resultInfo.HasError = true;
         DataTable dt = new DataTable();
@@ -1527,20 +1568,20 @@ public class ServiceControlCenter : IServiceControlCenter
 
         return jigInfo;
     }
-    private ResultInfo SocketCheck_CommonPackage(string mcNo, string opNo, string lotNo, string qrCode, string package)
+    public ResultInfo SocketRemove(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
     {
         ResultInfo resultInfo = new ResultInfo();
         resultInfo.HasError = true;
-        SaveLogFile(mcNo, lotNo, "sp_get_socket_check_common_package", "", qrCode + "|" + lotNo, LogType.jig_material);
         DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "[sp_set_socket_outoffmachine]", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
         using (SqlCommand cmd = new SqlCommand())
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_socket_check_common_package]";
-            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = qrCode;
-            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
-            cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_socket_outoffmachine]";
+            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
             cmd.Connection.Open();
             using (SqlDataReader rd = cmd.ExecuteReader())
             {
@@ -1554,7 +1595,7 @@ public class ServiceControlCenter : IServiceControlCenter
         if (dt.Rows.Count > 0)
         {
             DataRow dataRow = dt.Rows[0];
-            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
+            resultInfo.HasError = false;
             if (dataRow["Is_Pass"].ToString() == "FALSE")
             {
                 resultInfo.HasError = true;
@@ -1563,28 +1604,31 @@ public class ServiceControlCenter : IServiceControlCenter
             }
             else
             {
-                //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
                 resultInfo.HasError = false;
-                //jigInfo.SubType = dataRow["basetype"].ToString();
-                //jigInfo.Name = dataRow["name"].ToString();
+                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
             }
         }
         return resultInfo;
     }
-    private JigDataInfo SocketCheck_Lifetime(string mcNo, string opNo, string lotNo, string qrCode, string package)
+    #endregion
+    #region KANAGATA
+
+    public ResultInfo KanagataUpdate(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType,string parameter)
     {
         ResultInfo resultInfo = new ResultInfo();
-        resultInfo.HasError = true;
-        SaveLogFile(mcNo, lotNo, "sp_get_socket_check_common_package", "", qrCode + "|" + lotNo, LogType.jig_material);
         DataTable dt = new DataTable();
+        SaveLogFile(mcNo, lotNo, "QrCodeByUser := " + jigInfo.QrCodeByUser, "", "", LogType.jig_material);
         using (SqlCommand cmd = new SqlCommand())
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_get_socket_check_common_package]";
-            cmd.Parameters.Add("@QRCode", SqlDbType.VarChar).Value = qrCode;
-            cmd.Parameters.Add("@LotNo", SqlDbType.VarChar).Value = lotNo;
-            cmd.Parameters.Add("@Package", SqlDbType.VarChar).Value = package;
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_capillary_endlot]";
+            cmd.Parameters.Add("@CAPID", SqlDbType.Int).Value = jigInfo.Id;
+            cmd.Parameters.Add("@LOTNo", SqlDbType.VarChar).Value = lotNo;
+            cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
+            cmd.Parameters.Add("@OPNo", SqlDbType.VarChar).Value = opNo;
+            cmd.Parameters.Add("@LTValue", SqlDbType.Int).Value = jigInfo.ValuePerLot;
             cmd.Connection.Open();
             using (SqlDataReader rd = cmd.ExecuteReader())
             {
@@ -1598,29 +1642,13 @@ public class ServiceControlCenter : IServiceControlCenter
         if (dt.Rows.Count > 0)
         {
             DataRow dataRow = dt.Rows[0];
-            SaveLogFile(mcNo, lotNo, "Ispass := " + dataRow["Is_Pass"].ToString(), "", "", LogType.jig_material);
-            if (dataRow["Is_Pass"].ToString() == "FALSE")
-            {
-                resultInfo.HasError = true;
-                resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
-                resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
-            }
-            else
-            {
-                //jigInfo.Id = Convert.ToInt32(dataRow["id"]);
-                resultInfo.HasError = false;
-                //jigInfo.SubType = dataRow["basetype"].ToString();
-                //jigInfo.Name = dataRow["name"].ToString();
-            }
+            resultInfo.HasError = false;
+            if (dataRow["Is_Pass"].ToString() == "FALSE") resultInfo.HasError = true;
+            resultInfo.ErrorMessage = dataRow["Error_Message_ENG"].ToString();
+            resultInfo.ErrorMessage_Tha = dataRow["Error_Message_THA"].ToString();
+            resultInfo.Handling = dataRow["Handling"].ToString();
         }
-        return null;
-    }
-    #endregion
-    #region KANAGATA
-
-    public ResultInfo KanagataUpdate(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType)
-    {
-        return new ResultInfo();
+        return resultInfo;
     }
     public ResultInfo KanagataSetup(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string package)
     {
@@ -1636,12 +1664,12 @@ public class ServiceControlCenter : IServiceControlCenter
         }
         resultInfo.HasError = true;
         DataTable dt = new DataTable();
-        SaveLogFile(mcNo, lotNo, "sp_set_kanagata_setup_machine_V2", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+        SaveLogFile(mcNo, lotNo, "sp_set_kanagata_setup_machine_V3", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
         using (SqlCommand cmd = new SqlCommand())
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_kanagata_setup_machine_v2]";
+            cmd.CommandText = "[StoredProcedureDB].[jig].[sp_set_kanagata_setup_machine_v3]";
             cmd.Parameters.Add("@KanagataName", SqlDbType.VarChar).Value = jigInfo.QrCodeByUser;
             cmd.Parameters.Add("@MCNo", SqlDbType.VarChar).Value = mcNo;
             cmd.Parameters.Add("@UserID", SqlDbType.VarChar).Value = opNo;
@@ -1672,7 +1700,7 @@ public class ServiceControlCenter : IServiceControlCenter
             {
                 resultInfo.JigDataInfo = new JigDataInfo();
                 resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["id"]);
-                resultInfo.JigDataInfo.SubType = dataRow["subtype"].ToString();
+                resultInfo.JigDataInfo.SubType = dataRow["basetype"].ToString();
             }
         }
         End:
@@ -1815,8 +1843,21 @@ public class ServiceControlCenter : IServiceControlCenter
     private ResultInfo HpPpSetup(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType, string parameter)
     {
         ResultInfo resultInfo = new ResultInfo();
+        if (!string.IsNullOrEmpty(parameter))
+        {
+            JigDataInfo resultCheck = HpPpCheck(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+            if (!resultCheck.IsPass)
+            {
+                resultInfo.HasError = true;
+                resultInfo.ErrorMessage = resultCheck.Message_Eng;
+                resultInfo.ErrorMessage_Tha = resultCheck.Message_Thai;
+                resultInfo.Handling = resultCheck.Handling;
+                return resultInfo;
+            }
+        }
         DataTable dt = new DataTable();
         SaveLogFile(mcNo, lotNo, "sp_set_hp_pp_setup", "", jigInfo.QrCodeByUser + "|" + opNo, LogType.jig_material);
+
         using (SqlCommand cmd = new SqlCommand())
         {
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
@@ -1838,7 +1879,7 @@ public class ServiceControlCenter : IServiceControlCenter
         if (dt.Rows.Count > 0)
         {
             DataRow dataRow = dt.Rows[0];
-           
+
             if (dataRow["Is_Pass"].ToString() == "FALSE")
             {
                 resultInfo.HasError = true;
@@ -1856,9 +1897,9 @@ public class ServiceControlCenter : IServiceControlCenter
                 resultInfo.JigDataInfo.Id = Convert.ToInt32(dataRow["HPPP_ID"]);
                 resultInfo.JigDataInfo.SmallCode = dataRow["HPPP_SmallCode"].ToString();
             }
-                
-            
-        }
+
+
+        }        
         return resultInfo;
     }
     private JigDataInfo HpPpCheck(string mcNo, string opNo, string lotNo, JigDataInfo jigInfo, string jigType,string parameter)
