@@ -73,6 +73,57 @@ public class DatabaseSqlcommand
         }
         return ret;
     }
+    public DataTable GetCurrentTransLot(string lotNo)
+    {
+        DataTable dataTable = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[cellcon].[sp_get_current_trans_lots]";
+            cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = lotNo;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dataTable.Load(rd);
 
-    
+                }
+            }
+            cmd.Connection.Close();
+
+        }
+        return dataTable;
+    }
+    public DataTable SetLotProcessRecord(AfterLotEndEventArgs e)
+    {
+        DataTable dataTable = new DataTable();
+        using (SqlCommand cmd = new SqlCommand())
+        {
+            cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            cmd.CommandText = "[StoredProcedureDB].[cellcon].[sp_set_lot_process_records]";
+            cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = e.LotNo;
+            cmd.Parameters.Add("@p_nashi", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.PNashi.Value;
+            cmd.Parameters.Add("@frontng", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.FrontNg.Value;
+            cmd.Parameters.Add("@marker", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.Marker.Value;
+            cmd.Parameters.Add("@ngadjust", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.NgAdjust;
+            cmd.Parameters.Add("@job_id", System.Data.SqlDbType.Int).Value = e.JobId;
+            cmd.Parameters.Add("@good", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.GoodAdjust;
+            cmd.Parameters.Add("@cut_frame", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.Qty_Scrap;
+            cmd.Connection.Open();
+            using (SqlDataReader rd = cmd.ExecuteReader())
+            {
+                if (rd.HasRows)
+                {
+                    dataTable.Load(rd);
+
+                }
+            }
+            cmd.Connection.Close();
+
+        }
+        return dataTable;
+    }
 }

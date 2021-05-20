@@ -22,13 +22,8 @@ public class AfterLotEndEventArgs
     public string LotJudge { get; set; }
     [DataMember]
     public int? JobSpecialFlowId { get; set; }
+    //Support zero control
     [DataMember]
-    public int? PNashi { get; set; }
-    [DataMember]
-    public int? FrontNg { get; set; }
-    [DataMember]
-    public int? Marker { get; set; }
-    [DataMember]
-    public int? CutFrame { get; set; }
+    public LotData LotDataQuantity { get; set; }
 
 }

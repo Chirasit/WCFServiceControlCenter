@@ -51,9 +51,11 @@ public class ServiceControlCenter : IServiceControlCenter
     /// <returns></returns>
     public AfterLotEndResult AfterLotEnd(AfterLotEndEventArgs e)
     {
-
-
-
+        if (e.LotDataQuantity != null)
+        {
+            ZeroControlAdjust(e);
+        }
+        
         AfterLotEndResult afterLotEndResult = new AfterLotEndResult();
         afterLotEndResult.HasError = false;
         afterLotEndResult.WarningMessage = "";
@@ -1112,6 +1114,11 @@ public class ServiceControlCenter : IServiceControlCenter
                 strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\SpecialflowLog.csv");
                 strPathBackup = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\SpecialflowLog" + DateTime.Now.ToString("yyyyMMddHHmm") + @".csv");
             }
+            else if (logType == LogType.zero_control)
+            {
+                strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\ZeroControlLog.csv");
+                strPathBackup = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\ZeroControlLog" + DateTime.Now.ToString("yyyyMMddHHmm") + @".csv");
+            }
             else
             {
                 strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\JigMaterialLog.csv");
@@ -1138,7 +1145,8 @@ public class ServiceControlCenter : IServiceControlCenter
     enum LogType
     {
         special_flow = 1,
-        jig_material =2
+        jig_material = 2,
+        zero_control = 3
     }
     public void DoWork()
     {
@@ -2362,5 +2370,81 @@ public class ServiceControlCenter : IServiceControlCenter
         }
         return result;
         
+    }
+    private void ZeroControlAdjust(AfterLotEndEventArgs e)
+    {
+        //if (!e.LotData.PNashi.HasValue && !e.LotData.PNashi_Scrap.HasValue && !e.LotData.FrontNg.HasValue && !e.LotData.FrontNg_Scrap.HasValue
+        //    && !e.LotData.Marker.HasValue && !e.LotData.Marker_Scrap.HasValue && !e.LotData.OS_Scrap.HasValue && !e.LotData.Qty_Scrap.HasValue)
+        //{
+        //    return;
+        //}
+        //set default parameter
+        if (!e.LotDataQuantity.PNashi.HasValue) e.LotDataQuantity.PNashi = 0;
+        if (!e.LotDataQuantity.PNashi_Scrap.HasValue) e.LotDataQuantity.PNashi_Scrap = 0;
+        if (!e.LotDataQuantity.FrontNg.HasValue) e.LotDataQuantity.FrontNg = 0;
+        if (!e.LotDataQuantity.FrontNg_Scrap.HasValue) e.LotDataQuantity.FrontNg_Scrap = 0;
+        if (!e.LotDataQuantity.Marker.HasValue) e.LotDataQuantity.Marker = 0;
+        if (!e.LotDataQuantity.Marker_Scrap.HasValue) e.LotDataQuantity.Marker_Scrap = 0;
+        if (!e.LotDataQuantity.OS_Scrap.HasValue) e.LotDataQuantity.OS_Scrap = 0;
+        if (!e.LotDataQuantity.Qty_Scrap.HasValue) e.LotDataQuantity.Qty_Scrap = 0;
+        SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "-", "LotNo:=" + e.LotNo
+            + "|PNashi:=" + e.LotDataQuantity.PNashi.Value.ToString()
+            + "|PNashi_Scrap:=" + e.LotDataQuantity.PNashi_Scrap.Value.ToString()
+            + "|FrontNg:=" + e.LotDataQuantity.FrontNg.Value.ToString()
+            + "|FrontNg_Scrap:=" + e.LotDataQuantity.FrontNg_Scrap.Value.ToString()  
+            + "|Marker:=" + e.LotDataQuantity.Marker.Value.ToString()
+            + "|Marker_Scrap:=" + e.LotDataQuantity.Marker_Scrap.Value.ToString()
+            + "|OS_Scrap:=" + e.LotDataQuantity.OS_Scrap.Value.ToString()
+            + "|Qty_Scrap:=" + e.LotDataQuantity.Qty_Scrap.Value.ToString(), LogType.zero_control);
+        //Get Data from current translot
+        DatabaseSqlcommand sql = new DatabaseSqlcommand();
+        DataTable currentLotDataTable = sql.GetCurrentTransLot(e.LotNo);
+        int ngAdjust = 0;
+        int goodAdjust = 0;
+        int pNashi = 0;
+        int frontNg = 0;
+        int markerNg = 0;
+        int qtyScrap = 0;
+        if (currentLotDataTable.Rows.Count > 0)
+        {
+            DataRow row = currentLotDataTable.Rows[0];
+            string[] strSplit = row["Package"].ToString().Split('-');
+            if (strSplit[0] != "TO263")
+            {
+                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
+                return;
+            }
+            int.TryParse(row["GoodBeforeProcess"].ToString(), out goodAdjust);
+            int.TryParse(row["NgBeforeProcess"].ToString(), out ngAdjust);
+            int.TryParse(row["PNashi"].ToString(), out pNashi);
+            int.TryParse(row["FrontNg"].ToString(), out frontNg);
+            int.TryParse(row["MarkerNg"].ToString(), out markerNg);
+            int.TryParse(row["CutFrame"].ToString(), out qtyScrap);
+        }
+        int currentNgAdjust = ngAdjust - (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
+        if (currentNgAdjust < 0)
+        {
+            SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "currentNgAdjust < 0", LogType.zero_control);
+            return;
+        }
+        int currentGoodAdjust = goodAdjust + (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
+        e.LotDataQuantity.FrontNg = frontNg + e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.FrontNg_Scrap.Value;
+        e.LotDataQuantity.Marker = markerNg + e.LotDataQuantity.Marker.Value - e.LotDataQuantity.Marker_Scrap.Value;
+        e.LotDataQuantity.PNashi = pNashi + e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.PNashi_Scrap.Value;
+        e.LotDataQuantity.Qty_Scrap = qtyScrap + e.LotDataQuantity.Qty_Scrap.Value;
+        if (e.LotDataQuantity.OS_Scrap > 0)
+        {
+            e.LotDataQuantity.FrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value;
+        }
+        DataTable result = sql.SetLotProcessRecord(e);
+        if (result.Rows.Count > 0)
+        {
+            DataRow row = result.Rows[0];
+            if (row["Is_Pass"].ToString() == "FALSE")
+            {
+                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Error:=" + row["Error_Message_THA"].ToString(), LogType.zero_control);
+                return;
+            }
+        }
     }
 }
