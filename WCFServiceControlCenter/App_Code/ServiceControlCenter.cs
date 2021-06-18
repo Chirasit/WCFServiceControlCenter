@@ -53,7 +53,15 @@ public class ServiceControlCenter : IServiceControlCenter
     {
         if (e.LotDataQuantity != null)
         {
-            ZeroControlAdjust(e);
+            try
+            {
+                ZeroControlAdjust(e);
+            }
+            catch (Exception ex)
+            {
+                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Error > ", ex.Message, LogType.zero_control);
+            }
+            
         }
         
         AfterLotEndResult afterLotEndResult = new AfterLotEndResult();
@@ -1141,6 +1149,10 @@ public class ServiceControlCenter : IServiceControlCenter
 
             //throw;
         }
+    }
+    private void DeleteLogFile(string path)
+    {
+
     }
     enum LogType
     {
@@ -2376,7 +2388,7 @@ public class ServiceControlCenter : IServiceControlCenter
         //if (!e.LotData.PNashi.HasValue && !e.LotData.PNashi_Scrap.HasValue && !e.LotData.FrontNg.HasValue && !e.LotData.FrontNg_Scrap.HasValue
         //    && !e.LotData.Marker.HasValue && !e.LotData.Marker_Scrap.HasValue && !e.LotData.OS_Scrap.HasValue && !e.LotData.Qty_Scrap.HasValue)
         //{
-        //    return;
+        //return;
         //}
         //set default parameter
         if (!e.LotDataQuantity.PNashi.HasValue) e.LotDataQuantity.PNashi = 0;
@@ -2387,64 +2399,173 @@ public class ServiceControlCenter : IServiceControlCenter
         if (!e.LotDataQuantity.Marker_Scrap.HasValue) e.LotDataQuantity.Marker_Scrap = 0;
         if (!e.LotDataQuantity.OS_Scrap.HasValue) e.LotDataQuantity.OS_Scrap = 0;
         if (!e.LotDataQuantity.Qty_Scrap.HasValue) e.LotDataQuantity.Qty_Scrap = 0;
-        SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "-", "LotNo:=" + e.LotNo
-            + "|PNashi:=" + e.LotDataQuantity.PNashi.Value.ToString()
-            + "|PNashi_Scrap:=" + e.LotDataQuantity.PNashi_Scrap.Value.ToString()
-            + "|FrontNg:=" + e.LotDataQuantity.FrontNg.Value.ToString()
-            + "|FrontNg_Scrap:=" + e.LotDataQuantity.FrontNg_Scrap.Value.ToString()  
-            + "|Marker:=" + e.LotDataQuantity.Marker.Value.ToString()
-            + "|Marker_Scrap:=" + e.LotDataQuantity.Marker_Scrap.Value.ToString()
-            + "|OS_Scrap:=" + e.LotDataQuantity.OS_Scrap.Value.ToString()
-            + "|Qty_Scrap:=" + e.LotDataQuantity.Qty_Scrap.Value.ToString(), LogType.zero_control);
+
         //Get Data from current translot
         DatabaseSqlcommand sql = new DatabaseSqlcommand();
         DataTable currentLotDataTable = sql.GetCurrentTransLot(e.LotNo);
-        int ngAdjust = 0;
-        int goodAdjust = 0;
-        int pNashi = 0;
-        int frontNg = 0;
-        int markerNg = 0;
-        int qtyScrap = 0;
+        int ngAdjust = 0; int goodAdjust = 0; int pNashi = 0;int frontNg = 0; int markerNg = 0; int qtyScrap = 0;
+        int frameInput = 0; int framePass = 0; int frameFail = 0; int pcsPerFrame = 0; int frameScrap = 0;
+        string[] mcnoSplit = e.McNo.Split('-');
         if (currentLotDataTable.Rows.Count > 0)
         {
             DataRow row = currentLotDataTable.Rows[0];
             string[] strSplit = row["Package"].ToString().Split('-');
-            if (strSplit[0] != "TO263")
+            string pkg = row["Package"].ToString().Replace(" ", "");
+            //if (strSplit[0] != "TO263")
+            //{
+            //    SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
+            //    return;
+            //}
+
+            if (strSplit[0] == "TO263" || pkg == "HRP5" || pkg == "HRP7" || pkg == "TO252-5")
             {
-                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
+
+            }
+            else
+            {
+                SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
                 return;
             }
-            int.TryParse(row["GoodBeforeProcess"].ToString(), out goodAdjust);
-            int.TryParse(row["NgBeforeProcess"].ToString(), out ngAdjust);
+            
+
+            if (e.LotId == null)
+            {
+                int lotId = 0;
+                int.TryParse(row["LotId"].ToString(), out lotId);
+                e.LotId = lotId;
+            }
+
+            int.TryParse(row["Good"].ToString(), out goodAdjust);
+            int.TryParse(row["NG"].ToString(), out ngAdjust);
             int.TryParse(row["PNashi"].ToString(), out pNashi);
             int.TryParse(row["FrontNg"].ToString(), out frontNg);
             int.TryParse(row["MarkerNg"].ToString(), out markerNg);
             int.TryParse(row["CutFrame"].ToString(), out qtyScrap);
+            int.TryParse(row["PcsPerFrame"].ToString(), out pcsPerFrame);
+            int.TryParse(row["FrameInput"].ToString(), out frameInput);
+            int.TryParse(row["FramePass"].ToString(), out framePass);
+            int.TryParse(row["FrameFail"].ToString(), out frameFail);
+            if (framePass != 0)
+            {
+                frameScrap = (frameInput - (framePass + frameFail)) * pcsPerFrame;
+            }
+                        
+            if (goodAdjust == 0)
+            {
+                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Warning", "GoodBeforeProcess:=0", LogType.zero_control);
+                int.TryParse(row["GoodStepSum"].ToString(), out goodAdjust);
+                int.TryParse(row["NgStepSum"].ToString(), out ngAdjust);
+                if (goodAdjust == 0)
+                {
+                    SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Warning", "GoodStepSum:=0", LogType.zero_control);
+                    int.TryParse(row["Good"].ToString(), out goodAdjust);
+                    int.TryParse(row["NG"].ToString(), out ngAdjust);
+                    if (goodAdjust == 0)
+                    {
+                        SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Error", "Good:=0", LogType.zero_control);
+                        return;
+                    }
+                }
+            }
+            
+            SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "-", "Good:=" + e.LotDataQuantity.GoodAdjust.ToString() + "[" + goodAdjust.ToString() + "]"
+                + "|Ng:=" + e.LotDataQuantity.NgAdjust.ToString() + "[" + ngAdjust.ToString() + "]"
+                + "|PNashi:=" + e.LotDataQuantity.PNashi.Value.ToString() + "[" + pNashi.ToString() + "]"
+                + "|PNashi_Scrap:=" + e.LotDataQuantity.PNashi_Scrap.Value.ToString()
+                + "|FrontNg:=" + e.LotDataQuantity.FrontNg.Value.ToString() + "[" + frontNg.ToString() + "]"
+                + "|FrontNg_Scrap:=" + e.LotDataQuantity.FrontNg_Scrap.Value.ToString()
+                + "|Marker:=" + e.LotDataQuantity.Marker.Value.ToString() + "[" + markerNg.ToString() + "]"
+                + "|Marker_Scrap:=" + e.LotDataQuantity.Marker_Scrap.Value.ToString()
+                + "|OS_Scrap:=" + e.LotDataQuantity.OS_Scrap.Value.ToString()
+                + "|Qty_Scrap:=" + e.LotDataQuantity.Qty_Scrap.Value.ToString() + "[" + qtyScrap.ToString() + "]", LogType.zero_control);
         }
-        int currentNgAdjust = ngAdjust - (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
-        if (currentNgAdjust < 0)
+        else
         {
-            SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "currentNgAdjust < 0", LogType.zero_control);
+            SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Error", "Lot Not Found!", LogType.zero_control);
             return;
         }
-        int currentGoodAdjust = goodAdjust + (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
-        e.LotDataQuantity.FrontNg = frontNg + e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.FrontNg_Scrap.Value;
-        e.LotDataQuantity.Marker = markerNg + e.LotDataQuantity.Marker.Value - e.LotDataQuantity.Marker_Scrap.Value;
-        e.LotDataQuantity.PNashi = pNashi + e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.PNashi_Scrap.Value;
+
+        //update to lotProcessRecord
+        //int currentNgAdjust = ngAdjust - (frontNg + markerNg + e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value + qtyScrap + e.LotDataQuantity.Qty_Scrap.Value);
+        //if (currentNgAdjust < 0)
+        //{
+        //    SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "currentNgAdjust < 0", LogType.zero_control);
+        //    currentNgAdjust = 0;
+        //    //return;
+        //}
+        //e.LotDataQuantity.NgAdjust = ngAdjust - (frontNg + e.LotDataQuantity.FrontNg.Value + markerNg + e.LotDataQuantity.Marker.Value);
+        //ngAdjust - (frontNg + e.LotDataQuantity.FrontNg.Value + markerNg + e.LotDataQuantity.Marker.Value);
+        //if (e.LotDataQuantity.GoodAdjust == 0)
+        //{
+        //    DataRow row = currentLotDataTable.Rows[0];
+        //    int tmpGood = 0;
+        //    int.TryParse(row["GoodStepSum"].ToString(), out tmpGood);
+        //    e.LotDataQuantity.GoodAdjust = tmpGood;
+        //}
+        //else
+        //{
+        int transGood = goodAdjust + e.LotDataQuantity.FrontNg_Scrap.Value + e.LotDataQuantity.OS_Scrap.Value + e.LotDataQuantity.Marker_Scrap.Value;
+        int transNg = ngAdjust - e.LotDataQuantity.FrontNg_Scrap.Value - e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.Marker_Scrap.Value; 
+
+        e.LotDataQuantity.NgAdjust = e.LotDataQuantity.NgAdjust - (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value 
+            + e.LotDataQuantity.FrontNg_Scrap.Value + e.LotDataQuantity.Marker_Scrap.Value + e.LotDataQuantity.OS_Scrap.Value);
+
+        e.LotDataQuantity.GoodAdjust = goodAdjust + (frontNg + e.LotDataQuantity.FrontNg.Value)
+            + (markerNg + e.LotDataQuantity.Marker.Value);  // (frontNg + markerNg + e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value); //goodAdjust + (frontNg + markerNg + e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
+            //}
+        
+        e.LotDataQuantity.FrontNg = frontNg + e.LotDataQuantity.FrontNg.Value;// - e.LotDataQuantity.FrontNg_Scrap.Value;
+        e.LotDataQuantity.Marker = markerNg + e.LotDataQuantity.Marker.Value;// - e.LotDataQuantity.Marker_Scrap.Value;
+        e.LotDataQuantity.PNashi = pNashi + e.LotDataQuantity.PNashi.Value;// - e.LotDataQuantity.PNashi_Scrap.Value;
         e.LotDataQuantity.Qty_Scrap = qtyScrap + e.LotDataQuantity.Qty_Scrap.Value;
-        if (e.LotDataQuantity.OS_Scrap > 0)
+                
+        int transFrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.FrontNg_Scrap.Value;
+        int transMarkerNg = e.LotDataQuantity.Marker.Value - e.LotDataQuantity.Marker_Scrap.Value;
+        int transPNashi = e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.PNashi_Scrap.Value;
+        if (e.LotDataQuantity.OS_Scrap.Value > 0)
         {
-            e.LotDataQuantity.FrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value;
+            if ((e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.PNashi.Value) > 0)
+            {
+                e.LotDataQuantity.OS_Scrap = e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.PNashi.Value;
+                if ((e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value) > 0)
+                {
+                    transFrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value;
+                }
+                else
+                {
+                    transFrontNg = 0;
+                }
+                transPNashi = 0;
+            }
+            else
+            {
+                transPNashi = e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.OS_Scrap.Value;
+            }          
         }
-        DataTable result = sql.SetLotProcessRecord(e);
+        if (e.LotDataQuantity.Marker_Scrap.Value > 0)
+        {
+            if ((e.LotDataQuantity.Marker_Scrap.Value - e.LotDataQuantity.Marker.Value) > 0)
+            {
+                //e.LotDataQuantity.Marker = 0;
+                transMarkerNg = 0;
+            }
+            else
+            {
+                transMarkerNg = e.LotDataQuantity.Marker.Value - e.LotDataQuantity.Marker_Scrap.Value;
+                
+            }
+        }
+        DataTable result = sql.SetLotProcessRecord(e, transFrontNg, transMarkerNg, transPNashi, transGood, transNg);
         if (result.Rows.Count > 0)
         {
             DataRow row = result.Rows[0];
             if (row["Is_Pass"].ToString() == "FALSE")
             {
-                SaveLogFile(e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Error:=" + row["Error_Message_THA"].ToString(), LogType.zero_control);
+                SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "SetLotProcessRecord", "Fail", "Error:=" + row["Error_Message_THA"].ToString(), LogType.zero_control);
                 return;
             }
         }
+
+
     }
 }

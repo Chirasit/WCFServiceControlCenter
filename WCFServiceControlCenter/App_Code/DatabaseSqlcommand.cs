@@ -96,7 +96,7 @@ public class DatabaseSqlcommand
         }
         return dataTable;
     }
-    public DataTable SetLotProcessRecord(AfterLotEndEventArgs e)
+    public DataTable SetLotProcessRecord(AfterLotEndEventArgs e,int transFrontNg,int transMarkerNg,int transPNashi,int transGood,int transNg)
     {
         DataTable dataTable = new DataTable();
         using (SqlCommand cmd = new SqlCommand())
@@ -104,6 +104,7 @@ public class DatabaseSqlcommand
             cmd.Connection = new SqlConnection(ConfigurationManager.ConnectionStrings["DBxConnectionString"].ToString());
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
             cmd.CommandText = "[StoredProcedureDB].[cellcon].[sp_set_lot_process_records]";
+            cmd.Parameters.Add("@lot_id", System.Data.SqlDbType.Int).Value = e.LotId;
             cmd.Parameters.Add("@lot_no", System.Data.SqlDbType.VarChar).Value = e.LotNo;
             cmd.Parameters.Add("@p_nashi", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.PNashi.Value;
             cmd.Parameters.Add("@frontng", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.FrontNg.Value;
@@ -112,17 +113,20 @@ public class DatabaseSqlcommand
             cmd.Parameters.Add("@job_id", System.Data.SqlDbType.Int).Value = e.JobId;
             cmd.Parameters.Add("@good", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.GoodAdjust;
             cmd.Parameters.Add("@cut_frame", System.Data.SqlDbType.Int).Value = e.LotDataQuantity.Qty_Scrap;
+            cmd.Parameters.Add("@t_frontng", System.Data.SqlDbType.Int).Value = transFrontNg;
+            cmd.Parameters.Add("@t_marker", System.Data.SqlDbType.Int).Value = transMarkerNg;
+            cmd.Parameters.Add("@t_p_nashi", System.Data.SqlDbType.Int).Value = transPNashi;
+            cmd.Parameters.Add("@t_good", System.Data.SqlDbType.Int).Value = transGood;
+            cmd.Parameters.Add("@t_ng", System.Data.SqlDbType.Int).Value = transNg;
             cmd.Connection.Open();
             using (SqlDataReader rd = cmd.ExecuteReader())
             {
                 if (rd.HasRows)
                 {
                     dataTable.Load(rd);
-
                 }
             }
             cmd.Connection.Close();
-
         }
         return dataTable;
     }

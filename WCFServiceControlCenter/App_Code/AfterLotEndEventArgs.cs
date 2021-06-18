@@ -22,6 +22,8 @@ public class AfterLotEndEventArgs
     public string LotJudge { get; set; }
     [DataMember]
     public int? JobSpecialFlowId { get; set; }
+    [DataMember]
+    public int? LotId { get; set; }
     //Support zero control
     [DataMember]
     public LotData LotDataQuantity { get; set; }
