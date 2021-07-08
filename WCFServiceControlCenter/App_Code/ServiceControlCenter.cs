@@ -1121,16 +1121,19 @@ public class ServiceControlCenter : IServiceControlCenter
             {
                 strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\SpecialflowLog.csv");
                 strPathBackup = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\SpecialflowLog" + DateTime.Now.ToString("yyyyMMddHHmm") + @".csv");
+                DeleteLogFile(System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\"), "SpecialflowLog");
             }
             else if (logType == LogType.zero_control)
             {
                 strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\ZeroControlLog.csv");
                 strPathBackup = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\ZeroControlLog" + DateTime.Now.ToString("yyyyMMddHHmm") + @".csv");
+                DeleteLogFile(System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\"), "ZeroControlLog");
             }
             else
             {
                 strPath = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\JigMaterialLog.csv");
                 strPathBackup = System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\JigMaterialLog" + DateTime.Now.ToString("yyyyMMddHHmm") + @".csv");
+                DeleteLogFile(System.Web.HttpContext.Current.Server.MapPath(@"~\\Log\Backup\"), "JigMaterialLog");
             }
              
             FileInfo fi = new FileInfo(strPath);
@@ -1150,9 +1153,28 @@ public class ServiceControlCenter : IServiceControlCenter
             //throw;
         }
     }
-    private void DeleteLogFile(string path)
+    private void DeleteLogFile(string path,string type)
     {
+        DateTime date = DateTime.Now;
+        if (date.Hour == 08 && date.Minute <= 10)
+        {
+            try
+            {
+                DirectoryInfo diInfo = new DirectoryInfo(path);
+                FileInfo[] fileInfos = diInfo.GetFiles(type + "*");
+                if (fileInfos.Length > 50)
+                {
+                    for (int i = 0; i < fileInfos.Length - 50; i++)
+                    {
+                        File.Delete(fileInfos[i].FullName);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
 
+        }
     }
     enum LogType
     {
@@ -2417,15 +2439,15 @@ public class ServiceControlCenter : IServiceControlCenter
             //    return;
             //}
 
-            if (strSplit[0] == "TO263" || pkg == "HRP5" || pkg == "HRP7" || pkg == "TO252-5")
-            {
+            //if (strSplit[0] == "TO263" || pkg == "HRP5" || pkg == "HRP7" || pkg == "TO252-5")
+            //{
 
-            }
-            else
-            {
-                SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
-                return;
-            }
+            //}
+            //else
+            //{
+            //    SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Fail", "Package:=" + row["Package"].ToString(), LogType.zero_control);
+            //    return;
+            //}
             
 
             if (e.LotId == null)
@@ -2504,11 +2526,16 @@ public class ServiceControlCenter : IServiceControlCenter
         //}
         //else
         //{
-        int transGood = goodAdjust + e.LotDataQuantity.FrontNg_Scrap.Value + e.LotDataQuantity.OS_Scrap.Value + e.LotDataQuantity.Marker_Scrap.Value;
-        int transNg = ngAdjust - e.LotDataQuantity.FrontNg_Scrap.Value - e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.Marker_Scrap.Value; 
+        int transGood = goodAdjust; // + e.LotDataQuantity.FrontNg_Scrap.Value + e.LotDataQuantity.OS_Scrap.Value + e.LotDataQuantity.Marker_Scrap.Value;
+        int transNg = ngAdjust; // - e.LotDataQuantity.FrontNg_Scrap.Value - e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.Marker_Scrap.Value; 
 
         e.LotDataQuantity.NgAdjust = e.LotDataQuantity.NgAdjust - (e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value 
             + e.LotDataQuantity.FrontNg_Scrap.Value + e.LotDataQuantity.Marker_Scrap.Value + e.LotDataQuantity.OS_Scrap.Value);
+        if (e.LotDataQuantity.NgAdjust < 0)
+        {
+            SaveLogFile(mcnoSplit[0] + "," + e.McNo, e.LotNo, "ZeroControlAdjust", "Error", "NgAdjust:=" + e.LotDataQuantity.NgAdjust.ToString(),LogType.zero_control);
+            e.LotDataQuantity.NgAdjust = 0;
+        }
 
         e.LotDataQuantity.GoodAdjust = goodAdjust + (frontNg + e.LotDataQuantity.FrontNg.Value)
             + (markerNg + e.LotDataQuantity.Marker.Value);  // (frontNg + markerNg + e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value); //goodAdjust + (frontNg + markerNg + e.LotDataQuantity.FrontNg.Value + e.LotDataQuantity.Marker.Value);
@@ -2524,23 +2551,35 @@ public class ServiceControlCenter : IServiceControlCenter
         int transPNashi = e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.PNashi_Scrap.Value;
         if (e.LotDataQuantity.OS_Scrap.Value > 0)
         {
+            int os_scrap = e.LotDataQuantity.OS_Scrap.Value;
+            e.LotDataQuantity.GoodAdjust = e.LotDataQuantity.GoodAdjust + pNashi;
             if ((e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.PNashi.Value) > 0)
             {
                 e.LotDataQuantity.OS_Scrap = e.LotDataQuantity.OS_Scrap.Value - e.LotDataQuantity.PNashi.Value;
+                transGood = transGood + e.LotDataQuantity.PNashi.Value;
+                transNg = transNg - e.LotDataQuantity.PNashi.Value;
                 if ((e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value) > 0)
                 {
                     transFrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.OS_Scrap.Value;
+                    transGood = transGood + e.LotDataQuantity.OS_Scrap.Value;
+                    transNg = transNg - e.LotDataQuantity.OS_Scrap.Value;
                 }
                 else
                 {
+                    transGood = transGood + e.LotDataQuantity.FrontNg.Value;
+                    transNg = transNg - e.LotDataQuantity.FrontNg.Value;
                     transFrontNg = 0;
                 }
                 transPNashi = 0;
+                e.LotDataQuantity.FrontNg = e.LotDataQuantity.OS_Scrap;
             }
             else
             {
+                transGood = transGood + e.LotDataQuantity.OS_Scrap.Value;
+                transNg = transNg - e.LotDataQuantity.OS_Scrap.Value;
                 transPNashi = e.LotDataQuantity.PNashi.Value - e.LotDataQuantity.OS_Scrap.Value;
-            }          
+                e.LotDataQuantity.PNashi = e.LotDataQuantity.OS_Scrap;
+            }
         }
         if (e.LotDataQuantity.Marker_Scrap.Value > 0)
         {
@@ -2548,11 +2587,29 @@ public class ServiceControlCenter : IServiceControlCenter
             {
                 //e.LotDataQuantity.Marker = 0;
                 transMarkerNg = 0;
+                transGood = transGood + e.LotDataQuantity.Marker.Value;
+                transNg = transNg - e.LotDataQuantity.Marker.Value;
             }
             else
             {
                 transMarkerNg = e.LotDataQuantity.Marker.Value - e.LotDataQuantity.Marker_Scrap.Value;
-                
+                transGood = transGood + e.LotDataQuantity.Marker_Scrap.Value;
+                transNg = transNg - e.LotDataQuantity.Marker_Scrap.Value;
+            }
+        }
+        if (e.LotDataQuantity.FrontNg_Scrap.Value > 0)
+        {
+            if ((e.LotDataQuantity.FrontNg_Scrap.Value - e.LotDataQuantity.FrontNg.Value) > 0)
+            {
+                transFrontNg = 0;
+                transGood = transGood + e.LotDataQuantity.FrontNg.Value;
+                transNg = transNg - e.LotDataQuantity.FrontNg.Value;
+            }
+            else
+            {
+                transFrontNg = e.LotDataQuantity.FrontNg.Value - e.LotDataQuantity.FrontNg_Scrap.Value;
+                transGood = transGood + e.LotDataQuantity.FrontNg_Scrap.Value;
+                transNg = transNg - e.LotDataQuantity.FrontNg_Scrap.Value;
             }
         }
         DataTable result = sql.SetLotProcessRecord(e, transFrontNg, transMarkerNg, transPNashi, transGood, transNg);
