@@ -4,6 +4,8 @@
     <xs:sequence>
       <xs:element minOccurs="0" name="JobId" type="xs:int" />
       <xs:element minOccurs="0" name="JobSpecialFlowId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="LotDataQuantity" nillable="true" type="tns:LotData" />
+      <xs:element minOccurs="0" name="LotId" nillable="true" type="xs:int" />
       <xs:element minOccurs="0" name="LotJudge" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="LotNo" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="McNo" nillable="true" type="xs:string" />
@@ -11,6 +13,24 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="AfterLotEndEventArgs" nillable="true" type="tns:AfterLotEndEventArgs" />
+  <xs:complexType name="LotData">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="FrontNg" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="FrontNg_Scrap" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="GoodAdjust" type="xs:int" />
+      <xs:element minOccurs="0" name="GoodFrameAdjust" type="xs:int" />
+      <xs:element minOccurs="0" name="Marker" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="Marker_Scrap" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="NgAdjust" type="xs:int" />
+      <xs:element minOccurs="0" name="NgFrameAdjust" type="xs:int" />
+      <xs:element minOccurs="0" name="OS_Scrap" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="PNashi" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="PNashi_Scrap" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="PcsPerWork" type="xs:int" />
+      <xs:element minOccurs="0" name="Qty_Scrap" nillable="true" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="LotData" nillable="true" type="tns:LotData" />
   <xs:complexType name="AfterLotEndResult">
     <xs:complexContent mixed="false">
       <xs:extension base="tns:ResultInfo">
@@ -22,11 +42,40 @@
   <xs:complexType name="ResultInfo">
     <xs:sequence>
       <xs:element minOccurs="0" name="ErrorMessage" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ErrorMessage_Tha" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Handling" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="HasError" type="xs:boolean" />
+      <xs:element minOccurs="0" name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
+      <xs:element minOccurs="0" name="JigId" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="JigSmallCode" nillable="true" type="xs:string" />
       <xs:element minOccurs="0" name="WarningMessage" nillable="true" type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ResultInfo" nillable="true" type="tns:ResultInfo" />
+  <xs:complexType name="JigDataInfo">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BarCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ExpireValue" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Handling" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Id" type="xs:int" />
+      <xs:element minOccurs="0" name="IsChange" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsPass" type="xs:boolean" />
+      <xs:element minOccurs="0" name="IsWarning" type="xs:boolean" />
+      <xs:element minOccurs="0" name="Message_Eng" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Message_Thai" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="QrCodeByUser" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="ShortName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SmallCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Status" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="SubType" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Type" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Value" type="xs:int" />
+      <xs:element minOccurs="0" name="ValuePerLot" type="xs:int" />
+      <xs:element minOccurs="0" name="Warning" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
   <xs:complexType name="AddSpecialFlowEventArgs">
     <xs:sequence>
       <xs:element minOccurs="0" name="IsAddNow" nillable="true" type="xs:boolean" />
@@ -78,27 +127,4 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ArrayOfJigDataInfo" nillable="true" type="tns:ArrayOfJigDataInfo" />
-  <xs:complexType name="JigDataInfo">
-    <xs:sequence>
-      <xs:element minOccurs="0" name="BarCode" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="ExpireValue" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Handling" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Id" type="xs:int" />
-      <xs:element minOccurs="0" name="IsChange" type="xs:boolean" />
-      <xs:element minOccurs="0" name="IsPass" type="xs:boolean" />
-      <xs:element minOccurs="0" name="IsWarning" type="xs:boolean" />
-      <xs:element minOccurs="0" name="Message_Eng" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Message_Thai" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="QrCodeByUser" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="ShortName" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="SmallCode" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Status" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="SubType" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Type" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="Value" type="xs:int" />
-      <xs:element minOccurs="0" name="Warning" nillable="true" type="xs:string" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="JigDataInfo" nillable="true" type="tns:JigDataInfo" />
 </xs:schema>

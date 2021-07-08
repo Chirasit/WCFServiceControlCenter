@@ -29,6 +29,12 @@ namespace WinFormTestWcf.ServiceReference1 {
         private System.Nullable<int> JobSpecialFlowIdField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private WinFormTestWcf.ServiceReference1.LotData LotDataQuantityField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> LotIdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string LotJudgeField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -72,6 +78,32 @@ namespace WinFormTestWcf.ServiceReference1 {
                 if ((this.JobSpecialFlowIdField.Equals(value) != true)) {
                     this.JobSpecialFlowIdField = value;
                     this.RaisePropertyChanged("JobSpecialFlowId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public WinFormTestWcf.ServiceReference1.LotData LotDataQuantity {
+            get {
+                return this.LotDataQuantityField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.LotDataQuantityField, value) != true)) {
+                    this.LotDataQuantityField = value;
+                    this.RaisePropertyChanged("LotDataQuantity");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> LotId {
+            get {
+                return this.LotIdField;
+            }
+            set {
+                if ((this.LotIdField.Equals(value) != true)) {
+                    this.LotIdField = value;
+                    this.RaisePropertyChanged("LotId");
                 }
             }
         }
@@ -140,6 +172,243 @@ namespace WinFormTestWcf.ServiceReference1 {
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="LotData", Namespace="http://schemas.datacontract.org/2004/07/")]
+    [System.SerializableAttribute()]
+    public partial class LotData : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> FrontNgField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> FrontNg_ScrapField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int GoodAdjustField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int GoodFrameAdjustField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> MarkerField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> Marker_ScrapField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int NgAdjustField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int NgFrameAdjustField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> OS_ScrapField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> PNashiField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> PNashi_ScrapField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int PcsPerWorkField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> Qty_ScrapField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> FrontNg {
+            get {
+                return this.FrontNgField;
+            }
+            set {
+                if ((this.FrontNgField.Equals(value) != true)) {
+                    this.FrontNgField = value;
+                    this.RaisePropertyChanged("FrontNg");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> FrontNg_Scrap {
+            get {
+                return this.FrontNg_ScrapField;
+            }
+            set {
+                if ((this.FrontNg_ScrapField.Equals(value) != true)) {
+                    this.FrontNg_ScrapField = value;
+                    this.RaisePropertyChanged("FrontNg_Scrap");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int GoodAdjust {
+            get {
+                return this.GoodAdjustField;
+            }
+            set {
+                if ((this.GoodAdjustField.Equals(value) != true)) {
+                    this.GoodAdjustField = value;
+                    this.RaisePropertyChanged("GoodAdjust");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int GoodFrameAdjust {
+            get {
+                return this.GoodFrameAdjustField;
+            }
+            set {
+                if ((this.GoodFrameAdjustField.Equals(value) != true)) {
+                    this.GoodFrameAdjustField = value;
+                    this.RaisePropertyChanged("GoodFrameAdjust");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> Marker {
+            get {
+                return this.MarkerField;
+            }
+            set {
+                if ((this.MarkerField.Equals(value) != true)) {
+                    this.MarkerField = value;
+                    this.RaisePropertyChanged("Marker");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> Marker_Scrap {
+            get {
+                return this.Marker_ScrapField;
+            }
+            set {
+                if ((this.Marker_ScrapField.Equals(value) != true)) {
+                    this.Marker_ScrapField = value;
+                    this.RaisePropertyChanged("Marker_Scrap");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int NgAdjust {
+            get {
+                return this.NgAdjustField;
+            }
+            set {
+                if ((this.NgAdjustField.Equals(value) != true)) {
+                    this.NgAdjustField = value;
+                    this.RaisePropertyChanged("NgAdjust");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int NgFrameAdjust {
+            get {
+                return this.NgFrameAdjustField;
+            }
+            set {
+                if ((this.NgFrameAdjustField.Equals(value) != true)) {
+                    this.NgFrameAdjustField = value;
+                    this.RaisePropertyChanged("NgFrameAdjust");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> OS_Scrap {
+            get {
+                return this.OS_ScrapField;
+            }
+            set {
+                if ((this.OS_ScrapField.Equals(value) != true)) {
+                    this.OS_ScrapField = value;
+                    this.RaisePropertyChanged("OS_Scrap");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> PNashi {
+            get {
+                return this.PNashiField;
+            }
+            set {
+                if ((this.PNashiField.Equals(value) != true)) {
+                    this.PNashiField = value;
+                    this.RaisePropertyChanged("PNashi");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> PNashi_Scrap {
+            get {
+                return this.PNashi_ScrapField;
+            }
+            set {
+                if ((this.PNashi_ScrapField.Equals(value) != true)) {
+                    this.PNashi_ScrapField = value;
+                    this.RaisePropertyChanged("PNashi_Scrap");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int PcsPerWork {
+            get {
+                return this.PcsPerWorkField;
+            }
+            set {
+                if ((this.PcsPerWorkField.Equals(value) != true)) {
+                    this.PcsPerWorkField = value;
+                    this.RaisePropertyChanged("PcsPerWork");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> Qty_Scrap {
+            get {
+                return this.Qty_ScrapField;
+            }
+            set {
+                if ((this.Qty_ScrapField.Equals(value) != true)) {
+                    this.Qty_ScrapField = value;
+                    this.RaisePropertyChanged("Qty_Scrap");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="ResultInfo", Namespace="http://schemas.datacontract.org/2004/07/")]
     [System.SerializableAttribute()]
     [System.Runtime.Serialization.KnownTypeAttribute(typeof(WinFormTestWcf.ServiceReference1.AddSpecialFlowResult))]
@@ -154,7 +423,22 @@ namespace WinFormTestWcf.ServiceReference1 {
         private string ErrorMessageField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ErrorMessage_ThaField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string HandlingField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private bool HasErrorField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private WinFormTestWcf.ServiceReference1.JigDataInfo JigDataInfoField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private System.Nullable<int> JigIdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string JigSmallCodeField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private string WarningMessageField;
@@ -183,6 +467,32 @@ namespace WinFormTestWcf.ServiceReference1 {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ErrorMessage_Tha {
+            get {
+                return this.ErrorMessage_ThaField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ErrorMessage_ThaField, value) != true)) {
+                    this.ErrorMessage_ThaField = value;
+                    this.RaisePropertyChanged("ErrorMessage_Tha");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Handling {
+            get {
+                return this.HandlingField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.HandlingField, value) != true)) {
+                    this.HandlingField = value;
+                    this.RaisePropertyChanged("Handling");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public bool HasError {
             get {
                 return this.HasErrorField;
@@ -196,6 +506,45 @@ namespace WinFormTestWcf.ServiceReference1 {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
+        public WinFormTestWcf.ServiceReference1.JigDataInfo JigDataInfo {
+            get {
+                return this.JigDataInfoField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.JigDataInfoField, value) != true)) {
+                    this.JigDataInfoField = value;
+                    this.RaisePropertyChanged("JigDataInfo");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public System.Nullable<int> JigId {
+            get {
+                return this.JigIdField;
+            }
+            set {
+                if ((this.JigIdField.Equals(value) != true)) {
+                    this.JigIdField = value;
+                    this.RaisePropertyChanged("JigId");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string JigSmallCode {
+            get {
+                return this.JigSmallCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.JigSmallCodeField, value) != true)) {
+                    this.JigSmallCodeField = value;
+                    this.RaisePropertyChanged("JigSmallCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
         public string WarningMessage {
             get {
                 return this.WarningMessageField;
@@ -204,6 +553,339 @@ namespace WinFormTestWcf.ServiceReference1 {
                 if ((object.ReferenceEquals(this.WarningMessageField, value) != true)) {
                     this.WarningMessageField = value;
                     this.RaisePropertyChanged("WarningMessage");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="JigDataInfo", Namespace="http://schemas.datacontract.org/2004/07/")]
+    [System.SerializableAttribute()]
+    public partial class JigDataInfo : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string BarCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ExpireValueField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string HandlingField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int IdField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsChangeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsPassField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool IsWarningField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string Message_EngField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string Message_ThaiField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string NameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string QrCodeByUserField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ShortNameField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string SmallCodeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string StatusField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string SubTypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string TypeField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int ValueField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private int ValuePerLotField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string WarningField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string BarCode {
+            get {
+                return this.BarCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.BarCodeField, value) != true)) {
+                    this.BarCodeField = value;
+                    this.RaisePropertyChanged("BarCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ExpireValue {
+            get {
+                return this.ExpireValueField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ExpireValueField, value) != true)) {
+                    this.ExpireValueField = value;
+                    this.RaisePropertyChanged("ExpireValue");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Handling {
+            get {
+                return this.HandlingField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.HandlingField, value) != true)) {
+                    this.HandlingField = value;
+                    this.RaisePropertyChanged("Handling");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int Id {
+            get {
+                return this.IdField;
+            }
+            set {
+                if ((this.IdField.Equals(value) != true)) {
+                    this.IdField = value;
+                    this.RaisePropertyChanged("Id");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsChange {
+            get {
+                return this.IsChangeField;
+            }
+            set {
+                if ((this.IsChangeField.Equals(value) != true)) {
+                    this.IsChangeField = value;
+                    this.RaisePropertyChanged("IsChange");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsPass {
+            get {
+                return this.IsPassField;
+            }
+            set {
+                if ((this.IsPassField.Equals(value) != true)) {
+                    this.IsPassField = value;
+                    this.RaisePropertyChanged("IsPass");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool IsWarning {
+            get {
+                return this.IsWarningField;
+            }
+            set {
+                if ((this.IsWarningField.Equals(value) != true)) {
+                    this.IsWarningField = value;
+                    this.RaisePropertyChanged("IsWarning");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message_Eng {
+            get {
+                return this.Message_EngField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.Message_EngField, value) != true)) {
+                    this.Message_EngField = value;
+                    this.RaisePropertyChanged("Message_Eng");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Message_Thai {
+            get {
+                return this.Message_ThaiField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.Message_ThaiField, value) != true)) {
+                    this.Message_ThaiField = value;
+                    this.RaisePropertyChanged("Message_Thai");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Name {
+            get {
+                return this.NameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.NameField, value) != true)) {
+                    this.NameField = value;
+                    this.RaisePropertyChanged("Name");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string QrCodeByUser {
+            get {
+                return this.QrCodeByUserField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.QrCodeByUserField, value) != true)) {
+                    this.QrCodeByUserField = value;
+                    this.RaisePropertyChanged("QrCodeByUser");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ShortName {
+            get {
+                return this.ShortNameField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ShortNameField, value) != true)) {
+                    this.ShortNameField = value;
+                    this.RaisePropertyChanged("ShortName");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string SmallCode {
+            get {
+                return this.SmallCodeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.SmallCodeField, value) != true)) {
+                    this.SmallCodeField = value;
+                    this.RaisePropertyChanged("SmallCode");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Status {
+            get {
+                return this.StatusField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.StatusField, value) != true)) {
+                    this.StatusField = value;
+                    this.RaisePropertyChanged("Status");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string SubType {
+            get {
+                return this.SubTypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.SubTypeField, value) != true)) {
+                    this.SubTypeField = value;
+                    this.RaisePropertyChanged("SubType");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Type {
+            get {
+                return this.TypeField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
+                    this.TypeField = value;
+                    this.RaisePropertyChanged("Type");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int Value {
+            get {
+                return this.ValueField;
+            }
+            set {
+                if ((this.ValueField.Equals(value) != true)) {
+                    this.ValueField = value;
+                    this.RaisePropertyChanged("Value");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public int ValuePerLot {
+            get {
+                return this.ValuePerLotField;
+            }
+            set {
+                if ((this.ValuePerLotField.Equals(value) != true)) {
+                    this.ValuePerLotField = value;
+                    this.RaisePropertyChanged("ValuePerLot");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string Warning {
+            get {
+                return this.WarningField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.WarningField, value) != true)) {
+                    this.WarningField = value;
+                    this.RaisePropertyChanged("Warning");
                 }
             }
         }
@@ -601,323 +1283,6 @@ namespace WinFormTestWcf.ServiceReference1 {
         }
     }
     
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="JigDataInfo", Namespace="http://schemas.datacontract.org/2004/07/")]
-    [System.SerializableAttribute()]
-    public partial class JigDataInfo : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
-        
-        [System.NonSerializedAttribute()]
-        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string BarCodeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string ExpireValueField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string HandlingField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private int IdField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private bool IsChangeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private bool IsPassField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private bool IsWarningField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string Message_EngField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string Message_ThaiField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string NameField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string QrCodeByUserField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string ShortNameField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string SmallCodeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string StatusField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string SubTypeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string TypeField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private int ValueField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private string WarningField;
-        
-        [global::System.ComponentModel.BrowsableAttribute(false)]
-        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
-            get {
-                return this.extensionDataField;
-            }
-            set {
-                this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string BarCode {
-            get {
-                return this.BarCodeField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.BarCodeField, value) != true)) {
-                    this.BarCodeField = value;
-                    this.RaisePropertyChanged("BarCode");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string ExpireValue {
-            get {
-                return this.ExpireValueField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.ExpireValueField, value) != true)) {
-                    this.ExpireValueField = value;
-                    this.RaisePropertyChanged("ExpireValue");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Handling {
-            get {
-                return this.HandlingField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.HandlingField, value) != true)) {
-                    this.HandlingField = value;
-                    this.RaisePropertyChanged("Handling");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public int Id {
-            get {
-                return this.IdField;
-            }
-            set {
-                if ((this.IdField.Equals(value) != true)) {
-                    this.IdField = value;
-                    this.RaisePropertyChanged("Id");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public bool IsChange {
-            get {
-                return this.IsChangeField;
-            }
-            set {
-                if ((this.IsChangeField.Equals(value) != true)) {
-                    this.IsChangeField = value;
-                    this.RaisePropertyChanged("IsChange");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public bool IsPass {
-            get {
-                return this.IsPassField;
-            }
-            set {
-                if ((this.IsPassField.Equals(value) != true)) {
-                    this.IsPassField = value;
-                    this.RaisePropertyChanged("IsPass");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public bool IsWarning {
-            get {
-                return this.IsWarningField;
-            }
-            set {
-                if ((this.IsWarningField.Equals(value) != true)) {
-                    this.IsWarningField = value;
-                    this.RaisePropertyChanged("IsWarning");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Message_Eng {
-            get {
-                return this.Message_EngField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.Message_EngField, value) != true)) {
-                    this.Message_EngField = value;
-                    this.RaisePropertyChanged("Message_Eng");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Message_Thai {
-            get {
-                return this.Message_ThaiField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.Message_ThaiField, value) != true)) {
-                    this.Message_ThaiField = value;
-                    this.RaisePropertyChanged("Message_Thai");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Name {
-            get {
-                return this.NameField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.NameField, value) != true)) {
-                    this.NameField = value;
-                    this.RaisePropertyChanged("Name");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string QrCodeByUser {
-            get {
-                return this.QrCodeByUserField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.QrCodeByUserField, value) != true)) {
-                    this.QrCodeByUserField = value;
-                    this.RaisePropertyChanged("QrCodeByUser");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string ShortName {
-            get {
-                return this.ShortNameField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.ShortNameField, value) != true)) {
-                    this.ShortNameField = value;
-                    this.RaisePropertyChanged("ShortName");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string SmallCode {
-            get {
-                return this.SmallCodeField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.SmallCodeField, value) != true)) {
-                    this.SmallCodeField = value;
-                    this.RaisePropertyChanged("SmallCode");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Status {
-            get {
-                return this.StatusField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.StatusField, value) != true)) {
-                    this.StatusField = value;
-                    this.RaisePropertyChanged("Status");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string SubType {
-            get {
-                return this.SubTypeField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.SubTypeField, value) != true)) {
-                    this.SubTypeField = value;
-                    this.RaisePropertyChanged("SubType");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Type {
-            get {
-                return this.TypeField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.TypeField, value) != true)) {
-                    this.TypeField = value;
-                    this.RaisePropertyChanged("Type");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public int Value {
-            get {
-                return this.ValueField;
-            }
-            set {
-                if ((this.ValueField.Equals(value) != true)) {
-                    this.ValueField = value;
-                    this.RaisePropertyChanged("Value");
-                }
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public string Warning {
-            get {
-                return this.WarningField;
-            }
-            set {
-                if ((object.ReferenceEquals(this.WarningField, value) != true)) {
-                    this.WarningField = value;
-                    this.RaisePropertyChanged("Warning");
-                }
-            }
-        }
-        
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
-        
-        protected void RaisePropertyChanged(string propertyName) {
-            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
-            if ((propertyChanged != null)) {
-                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
-            }
-        }
-    }
-    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(ConfigurationName="ServiceReference1.IServiceControlCenter")]
     public interface IServiceControlCenter {
@@ -951,6 +1316,30 @@ namespace WinFormTestWcf.ServiceReference1 {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigGetData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigGetDataResponse")]
         System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.JigDataInfo[]> JigGetDataAsync(string mcno, string lotno);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigCheckData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigCheckDataResponse")]
+        WinFormTestWcf.ServiceReference1.JigDataInfo JigCheckData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigCheckData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigCheckDataResponse")]
+        System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.JigDataInfo> JigCheckDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigSetupData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigSetupDataResponse")]
+        WinFormTestWcf.ServiceReference1.ResultInfo JigSetupData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigSetupData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigSetupDataResponse")]
+        System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigSetupDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigUpdateData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigUpdateDataResponse")]
+        WinFormTestWcf.ServiceReference1.ResultInfo JigUpdateData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigUpdateData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigUpdateDataResponse")]
+        System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigUpdateDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigRemoveData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigRemoveDataResponse")]
+        WinFormTestWcf.ServiceReference1.ResultInfo JigRemoveData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IServiceControlCenter/JigRemoveData", ReplyAction="http://tempuri.org/IServiceControlCenter/JigRemoveDataResponse")]
+        System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigRemoveDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -1018,6 +1407,38 @@ namespace WinFormTestWcf.ServiceReference1 {
         
         public System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.JigDataInfo[]> JigGetDataAsync(string mcno, string lotno) {
             return base.Channel.JigGetDataAsync(mcno, lotno);
+        }
+        
+        public WinFormTestWcf.ServiceReference1.JigDataInfo JigCheckData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigCheckData(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.JigDataInfo> JigCheckDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigCheckDataAsync(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public WinFormTestWcf.ServiceReference1.ResultInfo JigSetupData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigSetupData(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigSetupDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigSetupDataAsync(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public WinFormTestWcf.ServiceReference1.ResultInfo JigUpdateData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigUpdateData(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigUpdateDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType, string[] parameter) {
+            return base.Channel.JigUpdateDataAsync(mcNo, opNo, lotNo, jigInfo, jigType, parameter);
+        }
+        
+        public WinFormTestWcf.ServiceReference1.ResultInfo JigRemoveData(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType) {
+            return base.Channel.JigRemoveData(mcNo, opNo, lotNo, jigInfo, jigType);
+        }
+        
+        public System.Threading.Tasks.Task<WinFormTestWcf.ServiceReference1.ResultInfo> JigRemoveDataAsync(string mcNo, string opNo, string lotNo, WinFormTestWcf.ServiceReference1.JigDataInfo jigInfo, string jigType) {
+            return base.Channel.JigRemoveDataAsync(mcNo, opNo, lotNo, jigInfo, jigType);
         }
     }
 }
